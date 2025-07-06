@@ -1,0 +1,66 @@
+package com.fluffyknightz.ebook_library.modules.book.entity;
+
+import com.fluffyknightz.ebook_library.modules.author.entity.Author;
+import com.fluffyknightz.ebook_library.modules.file.entity.File;
+import com.fluffyknightz.ebook_library.modules.genre.entity.Genre;
+import com.fluffyknightz.ebook_library.modules.user.entity.User;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.util.List;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
+@Data
+@Document(collection = "book")
+public class Book {
+
+    @Id
+    private String id;
+
+    private String name;
+
+    private String synopsis;
+
+    @Field(name = "cover_image")
+    private String coverImage;
+
+    @Field(name = "cover_image_type")
+    private String coverImageType;
+
+    @Field(name = "s3_key")
+    private String s3Key;
+
+    @DBRef
+    private List<File> files;
+
+    @DBRef
+    private List<Genre> genres;
+
+    @DBRef
+    private List<Author> authors;
+
+    @Field(name = "created_date")
+    private String createdDate;
+
+    @DBRef
+    @Field(name = "created_user")
+    private User createdUser;
+
+    @Field(name = "updated_date")
+    private String updatedDate;
+
+    @DBRef
+    @Field(name = "updated_user")
+    private User updatedUser;
+
+    @Field(name = "is_deleted")
+    private boolean isDeleted;
+
+}

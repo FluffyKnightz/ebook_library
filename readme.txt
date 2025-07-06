@@ -1,0 +1,1 @@
+this app use aws s3 with io.awspring.cloud's spring-cloud-aws-starter
