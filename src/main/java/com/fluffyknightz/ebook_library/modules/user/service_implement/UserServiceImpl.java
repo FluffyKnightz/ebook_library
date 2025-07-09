@@ -6,6 +6,7 @@ import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import com.fluffyknightz.ebook_library.modules.user.repository.UserRepository;
 import com.fluffyknightz.ebook_library.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,10 +16,11 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User save(UserDTO userDTO) {
-        User user = new User(userDTO.username(), userDTO.email(), userDTO.password(), userDTO.role(), false);
+        User user = new User(userDTO.username(), userDTO.email(), passwordEncoder.encode(userDTO.password()), userDTO.role(), false);
         return userRepository.save(user);
     }
 

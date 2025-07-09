@@ -7,6 +7,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.io.Serializable;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -14,7 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Builder
 @Data
 @Document(collection = "user")
-public class User {
+public class User implements Serializable {
     @Id
     private String id;
 

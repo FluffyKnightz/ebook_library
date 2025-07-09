@@ -10,6 +10,8 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -19,23 +21,29 @@ import java.util.List;
 @Builder
 @Data
 @Document(collection = "book")
-public class Book {
+public class Book implements Serializable {
 
     @Id
     private String id;
 
-    private String name;
+    private String title;
+
+    @Field(name = "published_date")
+    private LocalDate publishedDate;
 
     private String synopsis;
 
-    @Field(name = "cover_image")
-    private String coverImage;
+    @Field(name = "cover_image_name")
+    private String coverImageName;
 
     @Field(name = "cover_image_type")
     private String coverImageType;
 
     @Field(name = "s3_key")
     private String s3Key;
+
+    @Field(name = "object_url")
+    private String objectURL;
 
     @DBRef
     private List<File> files;

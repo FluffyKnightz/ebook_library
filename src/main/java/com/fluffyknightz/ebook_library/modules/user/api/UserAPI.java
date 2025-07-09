@@ -1,4 +1,4 @@
-package com.fluffyknightz.ebook_library.modules.user.controller;
+package com.fluffyknightz.ebook_library.modules.user.api;
 
 import com.fluffyknightz.ebook_library.modules.user.dto.UserDTO;
 import com.fluffyknightz.ebook_library.modules.user.entity.User;
@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserAPI {
 
     private final UserService userService;
 

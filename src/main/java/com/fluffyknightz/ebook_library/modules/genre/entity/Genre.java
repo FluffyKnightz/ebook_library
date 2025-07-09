@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @AllArgsConstructor
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 @Builder
 @Data
 @Document(collection = "genre")
-public class Genre {
+public class Genre implements Serializable {
 
     @Id
     private String id;

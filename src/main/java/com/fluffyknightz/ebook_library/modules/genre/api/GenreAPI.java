@@ -1,4 +1,4 @@
-package com.fluffyknightz.ebook_library.modules.genre.controller;
+package com.fluffyknightz.ebook_library.modules.genre.api;
 
 import com.fluffyknightz.ebook_library.modules.genre.dto.GenreDTO;
 import com.fluffyknightz.ebook_library.modules.genre.entity.Genre;
@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/genres")
 @RequiredArgsConstructor
-public class GenreController {
+public class GenreAPI {
 
     private final GenreService genreService;
 

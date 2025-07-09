@@ -49,7 +49,7 @@ public class BucketController {
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
             Book book = Book.builder()
-                            .coverImage(file.getOriginalFilename())
+                            .coverImageName(file.getOriginalFilename())
                             .coverImageType(file.getContentType())
                             .s3Key(key)
                             .build();
@@ -85,7 +85,7 @@ public class BucketController {
 
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename= '%s'", book.get()
-                                                                                                             .getCoverImage()));
+                                                                                                             .getCoverImageName()));
 
             MediaType mediaType;
             try {

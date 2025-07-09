@@ -1,4 +1,4 @@
-package com.fluffyknightz.ebook_library.modules.author.controller;
+package com.fluffyknightz.ebook_library.modules.author.api;
 
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorDTO;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/authors")
 @RequiredArgsConstructor
-public class AuthorController {
+public class AuthorAPI {
 
     private final AuthorService authorService;
 
