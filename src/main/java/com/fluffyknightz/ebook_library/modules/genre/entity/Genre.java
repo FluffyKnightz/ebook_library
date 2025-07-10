@@ -3,6 +3,7 @@ package com.fluffyknightz.ebook_library.modules.genre.entity;
 import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -22,6 +23,7 @@ public class Genre implements Serializable {
     @Id
     private String id;
 
+    @Indexed(unique = true)
     private String name;
 
     @Field(name = "created_date")

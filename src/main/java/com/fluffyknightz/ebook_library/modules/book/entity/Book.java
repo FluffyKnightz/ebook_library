@@ -6,6 +6,7 @@ import com.fluffyknightz.ebook_library.modules.genre.entity.Genre;
 import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -21,6 +22,7 @@ import java.util.List;
 @Builder
 @Data
 @Document(collection = "book")
+@CompoundIndex(def = "{'title': 1, 'published_date': 1}", name = "book_uqx", unique = true)
 public class Book implements Serializable {
 
     @Id

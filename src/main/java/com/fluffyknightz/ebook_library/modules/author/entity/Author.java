@@ -3,6 +3,7 @@ package com.fluffyknightz.ebook_library.modules.author.entity;
 import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 @Builder
 @Data
 @Document(collection = "author")
+@CompoundIndex(def = "{'name': 1, 'nationality': 1, 'birth_date': 1}", name = "author_uqx", unique = true)
 public class Author implements Serializable {
 
     @Id
@@ -25,6 +27,11 @@ public class Author implements Serializable {
     private String name;
 
     private String description;
+
+    private String nationality;
+
+    @Field(name = "birth_date")
+    private LocalDate birthDate;
 
     @Field(name = "created_date")
     private LocalDate createdDate;

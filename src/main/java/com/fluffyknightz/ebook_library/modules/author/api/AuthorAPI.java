@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -17,9 +18,12 @@ public class AuthorAPI {
     private final AuthorService authorService;
 
     @PostMapping
-    public ResponseEntity<Author> createAuthor(@RequestBody AuthorDTO authorDTO) {
+    public ResponseEntity<Author> createAuthor(@RequestBody AuthorDTO authorDTO) throws IOException {
         Author author = authorService.save(authorDTO);
-        return ResponseEntity.ok(author);
+        if (author != null) {
+            return ResponseEntity.ok(author);
+        }
+        throw new IOException("Failed to create new author.");
     }
 
     @GetMapping

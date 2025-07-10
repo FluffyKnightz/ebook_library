@@ -39,7 +39,7 @@ public class UserAPI {
 
     @PutMapping
     public ResponseEntity<User> updateUser(@RequestBody UserDTO userDTO) {
-        User user = userService.update( userDTO);
+        User user = userService.update(userDTO);
         return ResponseEntity.ok(user);
     }
 

@@ -1,4 +1,5 @@
 package com.fluffyknightz.ebook_library.modules.author.dto;
 
-public record AuthorDTO(String id, String name, String description) {
-}
+import java.time.LocalDate;
+
+public record AuthorDTO(String id, String name, String nationality, LocalDate birthDate, String description) {}

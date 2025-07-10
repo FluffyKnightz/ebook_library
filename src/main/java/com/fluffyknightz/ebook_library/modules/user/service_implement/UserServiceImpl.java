@@ -6,6 +6,7 @@ import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import com.fluffyknightz.ebook_library.modules.user.repository.UserRepository;
 import com.fluffyknightz.ebook_library.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public User save(UserDTO userDTO) {
         User user = new User(userDTO.username(), userDTO.email(), passwordEncoder.encode(userDTO.password()), userDTO.role(), false);
-        return userRepository.save(user);
+        try {
+            return userRepository.save(user);
+        } catch (DuplicateKeyException d) {
+            throw new DuplicateKeyException("User with username: " + userDTO.username() + " already exists");
+        }
+
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.repository.AuthorRepository;
 import com.fluffyknightz.ebook_library.modules.author.service.AuthorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,6 +20,10 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Author save(AuthorDTO authorDTO) {
+
+        authorRepository.findByName(authorDTO.name())
+                        .orElseThrow(() -> new DuplicateKeyException("Author with name :" + authorDTO.name() + " already exists"));
+
         Author author = new Author(authorDTO.name(), authorDTO.description(), LocalDate.now(), null, LocalDate.now(), null, false);
         return authorRepository.save(author);
     }
