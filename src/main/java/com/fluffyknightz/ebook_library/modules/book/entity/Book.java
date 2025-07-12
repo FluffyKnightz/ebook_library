@@ -57,14 +57,14 @@ public class Book implements Serializable {
     private List<Author> authors;
 
     @Field(name = "created_date")
-    private String createdDate;
+    private LocalDate createdDate;
 
     @DBRef
     @Field(name = "created_user")
     private User createdUser;
 
     @Field(name = "updated_date")
-    private String updatedDate;
+    private LocalDate updatedDate;
 
     @DBRef
     @Field(name = "updated_user")
@@ -73,4 +73,23 @@ public class Book implements Serializable {
     @Field(name = "is_deleted")
     private boolean isDeleted;
 
+    public Book(String title, LocalDate publishedDate, String synopsis, String coverImageName, String coverImageType,
+                String s3Key, String objectURL, List<File> files, List<Genre> genres, List<Author> authors,
+                LocalDate createdDate, User createdUser, LocalDate updatedDate, User updatedUser, boolean isDeleted) {
+        this.title = title;
+        this.publishedDate = publishedDate;
+        this.synopsis = synopsis;
+        this.coverImageName = coverImageName;
+        this.coverImageType = coverImageType;
+        this.s3Key = s3Key;
+        this.objectURL = objectURL;
+        this.files = files;
+        this.genres = genres;
+        this.authors = authors;
+        this.createdDate = createdDate;
+        this.createdUser = createdUser;
+        this.updatedDate = updatedDate;
+        this.updatedUser = updatedUser;
+        this.isDeleted = isDeleted;
+    }
 }

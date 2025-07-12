@@ -17,11 +17,14 @@ public class MyUserDetails implements UserDetails {
     private final User user;
 
 
+    public User getUser() {
+        return user;
+    }
+
     //To Get UserName After Login
     public String getEmail() {
         return user.getEmail();
     }
-
 
     public String getRole() {
         return user.getRole()

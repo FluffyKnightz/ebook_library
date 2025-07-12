@@ -6,12 +6,15 @@ import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import com.fluffyknightz.ebook_library.modules.user.repository.UserRepository;
 import com.fluffyknightz.ebook_library.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -21,10 +24,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User save(UserDTO userDTO) {
-        User user = new User(userDTO.username(), userDTO.email(), passwordEncoder.encode(userDTO.password()), userDTO.role(), false);
+        User user = new User(userDTO.username(), userDTO.email(), passwordEncoder.encode(userDTO.password()),
+                             userDTO.role(), false);
         try {
             return userRepository.save(user);
-        } catch (DuplicateKeyException d) {
+        } catch (DataIntegrityViolationException ex) {
             throw new DuplicateKeyException("User with username: " + userDTO.username() + " already exists");
         }
 
@@ -43,16 +47,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(String id) {
-        User user = userRepository.findById(id)
-                                  .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        User user = findById(id);
         user.setDeleted(true);
         userRepository.save(user);
     }
 
     @Override
     public User update(UserDTO userDTO) {
-        User user = userRepository.findById(userDTO.id())
-                                  .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userDTO.id()));
+        User user = findById(userDTO.id());
         user.setUsername(userDTO.username());
         user.setEmail(userDTO.email());
         user.setPassword(userDTO.password());

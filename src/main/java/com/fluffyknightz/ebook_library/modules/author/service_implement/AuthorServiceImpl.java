@@ -6,6 +6,7 @@ import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.repository.AuthorRepository;
 import com.fluffyknightz.ebook_library.modules.author.service.AuthorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
@@ -21,11 +22,14 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Author save(AuthorDTO authorDTO) {
 
-        authorRepository.findByName(authorDTO.name())
-                        .orElseThrow(() -> new DuplicateKeyException("Author with name :" + authorDTO.name() + " already exists"));
 
-        Author author = new Author(authorDTO.name(), authorDTO.description(), LocalDate.now(), null, LocalDate.now(), null, false);
-        return authorRepository.save(author);
+        Author author = new Author(authorDTO.name(), authorDTO.description(), LocalDate.now(), null, LocalDate.now(),
+                                   null, false);
+        try {
+            return authorRepository.save(author);
+        } catch (DataIntegrityViolationException ex) {
+            throw new DuplicateKeyException("Author with username: " + authorDTO.name() + " already exists");
+        }
     }
 
     @Override
@@ -41,16 +45,14 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public void delete(String id) {
-        Author author = authorRepository.findById(id)
-                                        .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
+        Author author = findById(id);
         author.setDeleted(true);
         authorRepository.save(author);
     }
 
     @Override
     public Author update(AuthorDTO authorDTO) {
-        Author author = authorRepository.findById(authorDTO.id())
-                                        .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + authorDTO.id()));
+        Author author = findById(authorDTO.id());
         author.setName(authorDTO.name());
         author.setDescription(authorDTO.description());
         author.setUpdatedDate(LocalDate.now());

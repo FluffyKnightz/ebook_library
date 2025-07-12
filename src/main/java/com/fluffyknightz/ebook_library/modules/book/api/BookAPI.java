@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -22,10 +23,7 @@ public class BookAPI {
     private final BookService bookService;
 
     @PostMapping(MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Book> addBook(BookDTO bookDTO) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
+    public ResponseEntity<Book> addBook(BookDTO bookDTO) throws IOException {
 
         return new ResponseEntity<>(bookService.save(bookDTO), HttpStatus.CREATED);
     }
