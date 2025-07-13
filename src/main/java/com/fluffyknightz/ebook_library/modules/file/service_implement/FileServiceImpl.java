@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,9 +43,8 @@ public class FileServiceImpl implements FileService {
         List<String> keys = new ArrayList<>();
         List<File> filesList = new ArrayList<>();
         for (MultipartFile f : files) {
+            String key = UUID.randomUUID() + "_" + f.getOriginalFilename() + "_" + LocalDateTime.now();
             try {
-                String key = UUID.randomUUID() + "_" + f.getOriginalFilename() + "_" + LocalDateTime.now();
-
                 PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                                                                     .bucket(bucket)
                                                                     .contentType(f.getContentType())
@@ -59,7 +59,8 @@ public class FileServiceImpl implements FileService {
                 throw new IOException("Error saving file: " + ex.getMessage());
             }
 
-            File file = new File(f.getOriginalFilename(), f.getContentType(), null, null, false);
+            String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
+            File file = new File(f.getOriginalFilename(), f.getContentType(), key, objectUrl, false);
             filesList.add(file);
         }
 
@@ -78,8 +79,9 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void delete(String id) {
+    public void delete(String id) throws IOException {
         File file = findById(id);
+        deleteS3Object(Collections.singletonList(file.getS3Key()));
         fileRepository.delete(file);
     }
 

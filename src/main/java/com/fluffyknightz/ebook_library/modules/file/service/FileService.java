@@ -15,7 +15,7 @@ public interface FileService {
 
     File findById(String id);
 
-    void delete(String id);
+    void delete(String id) throws IOException;
 
     File update(FileDTO fileDTO);
 }

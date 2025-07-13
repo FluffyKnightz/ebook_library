@@ -128,13 +128,11 @@ public class BookServiceImpl implements BookService {
 
         String key = UUID.randomUUID() + "_" + bookDTO.coverImage()
                                                       .getOriginalFilename();
+
+        Book book = findById(bookDTO.id());
         try {
-
-            Book book = findById(bookDTO.id());
-
             if (!bookDTO.coverImage()
                         .isEmpty()) {
-
                 // delete previous image
                 deleteS3Object(book.getS3Key());
 
@@ -153,8 +151,10 @@ public class BookServiceImpl implements BookService {
 
                 String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
 
-                book.setCoverImageName(bookDTO.coverImage().getOriginalFilename());
-                book.setCoverImageType(bookDTO.coverImage().getContentType());
+                book.setCoverImageName(bookDTO.coverImage()
+                                              .getOriginalFilename());
+                book.setCoverImageType(bookDTO.coverImage()
+                                              .getContentType());
                 book.setSynopsis(key);
                 book.setObjectURL(objectUrl);
             }
