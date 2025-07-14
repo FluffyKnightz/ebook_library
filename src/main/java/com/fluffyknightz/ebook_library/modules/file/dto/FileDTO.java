@@ -1,3 +1,7 @@
 package com.fluffyknightz.ebook_library.modules.file.dto;
 
-public record FileDTO(String id, String fileName) {}
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+public record FileDTO(List<MultipartFile> files) {}

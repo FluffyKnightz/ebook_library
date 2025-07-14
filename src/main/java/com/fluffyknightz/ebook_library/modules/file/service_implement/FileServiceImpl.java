@@ -87,10 +87,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public File update(FileDTO fileDTO) {
-        File file = findById(fileDTO.id());
-        file.setFileName(fileDTO.fileName());
-        file.setFileType(null);
-        return fileRepository.save(file);
+        return null;
     }
 
     public void deleteS3Object(List<String> keys) throws IOException {

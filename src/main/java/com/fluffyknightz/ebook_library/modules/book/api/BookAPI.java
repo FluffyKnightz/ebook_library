@@ -6,10 +6,8 @@ import com.fluffyknightz.ebook_library.modules.book.entity.Book;
 import com.fluffyknightz.ebook_library.modules.book.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -22,10 +20,11 @@ public class BookAPI {
 
     private final BookService bookService;
 
-    @PostMapping(MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Book> addBook(BookDTO bookDTO) throws IOException {
+    @PostMapping
+    public ResponseEntity<Book> addBook(@AuthenticationPrincipal MyUserDetails myUserDetails,
+                                        BookDTO bookDTO) throws IOException {
 
-        return new ResponseEntity<>(bookService.save(bookDTO), HttpStatus.CREATED);
+        return new ResponseEntity<>(bookService.save(bookDTO, myUserDetails.getUser()), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -38,9 +37,10 @@ public class BookAPI {
         return ResponseEntity.ok(bookService.findById(id));
     }
 
-    @PutMapping(MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Book> updateBook(BookDTO bookDTO) {
-        return ResponseEntity.ok(bookService.update(bookDTO));
+    @PutMapping
+    public ResponseEntity<Book> updateBook(@AuthenticationPrincipal MyUserDetails myUserDetails,
+                                           BookDTO bookDTO) throws IOException {
+        return ResponseEntity.ok(bookService.update(bookDTO, myUserDetails.getUser()));
     }
 
     @DeleteMapping("/{id}")

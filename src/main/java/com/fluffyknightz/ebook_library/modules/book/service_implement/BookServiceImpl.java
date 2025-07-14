@@ -12,6 +12,7 @@ import com.fluffyknightz.ebook_library.modules.file.entity.File;
 import com.fluffyknightz.ebook_library.modules.file.service.FileService;
 import com.fluffyknightz.ebook_library.modules.genre.entity.Genre;
 import com.fluffyknightz.ebook_library.modules.genre.repository.GenreRepository;
+import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,13 +49,8 @@ public class BookServiceImpl implements BookService {
     @Value("${spring.cloud.aws.s3.region}")
     private String region;
 
-    private final Authentication authentication = SecurityContextHolder.getContext()
-                                                                       .getAuthentication();
-    private final MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
-
-
     @Override
-    public Book save(BookDTO bookDTO) throws IOException {
+    public Book save(BookDTO bookDTO, User user) throws IOException {
 
         // image save in s3
         String key = UUID.randomUUID() + "_" + bookDTO.coverImage()
@@ -92,7 +88,7 @@ public class BookServiceImpl implements BookService {
                                                                                                       .getOriginalFilename(),
                                  bookDTO.coverImage()
                                         .getContentType(), key, objectUrl, files, genres, authors, LocalDate.now(),
-                                 myUserDetails.getUser(), LocalDate.now(), myUserDetails.getUser(), false);
+                                 user, LocalDate.now(), user, false);
 
             return bookRepository.save(book);
         } catch (DataIntegrityViolationException ex) {
@@ -124,7 +120,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book update(BookDTO bookDTO) throws IOException {
+    public Book update(BookDTO bookDTO, User user) throws IOException {
 
         String key = UUID.randomUUID() + "_" + bookDTO.coverImage()
                                                       .getOriginalFilename();
@@ -172,7 +168,7 @@ public class BookServiceImpl implements BookService {
             book.setGenres(genres);
             book.setFiles(files);
             book.setUpdatedDate(LocalDate.now());
-            book.setUpdatedUser(myUserDetails.getUser());
+            book.setUpdatedUser(user);
 
             return bookRepository.save(book);
 
@@ -186,7 +182,7 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    public void deleteS3Object(String key) throws IOException {
+    public void deleteS3Object(String key) {
         try {
             s3Client.deleteObject(builder -> builder.key(key)
                                                     .bucket(bucket));
