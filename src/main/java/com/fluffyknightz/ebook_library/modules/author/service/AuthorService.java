@@ -2,11 +2,12 @@ package com.fluffyknightz.ebook_library.modules.author.service;
 
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorDTO;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
+import com.fluffyknightz.ebook_library.modules.user.entity.User;
 
 import java.util.List;
 
 public interface AuthorService {
-    Author save(AuthorDTO authorDTO);
+    Author save(User user, AuthorDTO authorDTO);
 
     List<Author> findAll();
 
@@ -14,5 +15,5 @@ public interface AuthorService {
 
     void delete(String id);
 
-    Author update(AuthorDTO authorDTO);
+    Author update(User user, AuthorDTO authorDTO);
 }

@@ -56,7 +56,7 @@ public class FileServiceImpl implements FileService {
                 keys.add(key);
             } catch (Exception ex) {
                 deleteS3Object(keys);
-                throw new IOException("Error saving file: " + ex.getMessage());
+                throw new IOException("Error saving files: " + ex.getMessage());
             }
 
             String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;

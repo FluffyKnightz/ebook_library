@@ -1,10 +1,14 @@
 package com.fluffyknightz.ebook_library.modules.author.api;
 
+import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorDTO;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.service.AuthorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -18,8 +22,10 @@ public class AuthorAPI {
     private final AuthorService authorService;
 
     @PostMapping
-    public ResponseEntity<Author> createAuthor(@RequestBody AuthorDTO authorDTO) throws IOException {
-        Author author = authorService.save(authorDTO);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Author> createAuthor(@AuthenticationPrincipal MyUserDetails myUserDetails,
+                                               @RequestBody @Valid AuthorDTO authorDTO) throws IOException {
+        Author author = authorService.save(myUserDetails.user(), authorDTO);
         if (author != null) {
             return ResponseEntity.ok(author);
         }
@@ -38,8 +44,9 @@ public class AuthorAPI {
     }
 
     @PutMapping
-    public ResponseEntity<Author> updateAuthor(@RequestBody AuthorDTO authorDTO) {
-        Author author = authorService.update(authorDTO);
+    public ResponseEntity<Author> updateAuthor(@AuthenticationPrincipal MyUserDetails myUserDetails,
+                                               @RequestBody AuthorDTO authorDTO) {
+        Author author = authorService.update(myUserDetails.user(), authorDTO);
         return ResponseEntity.ok(author);
     }
 

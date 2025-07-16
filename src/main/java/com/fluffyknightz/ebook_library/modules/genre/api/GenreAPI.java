@@ -5,6 +5,7 @@ import com.fluffyknightz.ebook_library.modules.genre.entity.Genre;
 import com.fluffyknightz.ebook_library.modules.genre.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/genres")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('SUPER_ADMIN')")
 public class GenreAPI {
 
     private final GenreService genreService;
@@ -42,6 +44,7 @@ public class GenreAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGenre(@PathVariable String id) {
         genreService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+                             .build();
     }
 }

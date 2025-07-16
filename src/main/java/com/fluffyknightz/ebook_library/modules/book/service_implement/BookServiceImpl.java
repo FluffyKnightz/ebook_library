@@ -74,7 +74,7 @@ public class BookServiceImpl implements BookService {
                                                                                     .getSize()));
 
         } catch (IOException ex) {
-            throw new IOException("Error saving book: " + ex.getMessage());
+            throw new IOException("Error saving Cover Image: " + ex.getMessage());
         }
 
         try {

@@ -1,5 +1,6 @@
 package com.fluffyknightz.ebook_library.config.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final MyUserDetailsService myUserDetailsService;
     private final MyUserDetailsPasswordService myUserDetailsPasswordService;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,19 +47,25 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.OPTIONS, "/**")
                         .permitAll()
-                        .requestMatchers("/api/v1/**","/api/v1/auth/login", "/swagger-ui/**")
+                        .requestMatchers("/api/v1/auth/**", "/swagger-ui/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
 
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
+                .exceptionHandling(exception -> exception.accessDeniedHandler(
+                                                                 (request, response, accessDeniedException) -> response.sendError(
+                                                                         HttpServletResponse.SC_FORBIDDEN, "Access Denied"))
+
+                                                         // 401 status bypass my global exception handler, so have to use own response
+                                                         .authenticationEntryPoint(customAuthenticationEntryPoint))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
 
-    // userDetailpasswordService
+    // userDetailPasswordService
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(myUserDetailsService);

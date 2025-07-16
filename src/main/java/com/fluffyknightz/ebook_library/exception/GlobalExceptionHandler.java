@@ -1,54 +1,84 @@
 package com.fluffyknightz.ebook_library.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorDetails> resourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), HttpStatus.NOT_FOUND.value(), ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+
+    // 400 Bad Request: validation errors, missing parameters, unreadable messages, illegal args
+    @ExceptionHandler({MethodArgumentNotValidException.class, MissingServletRequestParameterException.class, HttpMessageNotReadableException.class, IllegalArgumentException.class})
+    public ResponseEntity<ErrorDetails> handleBadRequest(Exception ex, HttpServletRequest request) {
+        String message;
+        if (ex instanceof MethodArgumentNotValidException validationEx) {
+            message = validationEx.getBindingResult()
+                                  .getFieldErrors()
+                                  .stream()
+                                  .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                                  .collect(Collectors.joining("; "));
+        } else {
+            message = ex.getMessage();
+        }
+        return buildResponse(request, HttpStatus.BAD_REQUEST, message);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorDetails> illegalArgumentException(IllegalArgumentException ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), HttpStatus.BAD_REQUEST.value(), ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    // 404 Not Found: resource or endpoint not found
+    @ExceptionHandler({ResourceNotFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity<ErrorDetails> handleNotFound(Exception ex, HttpServletRequest request) {
+        String message = ex.getMessage();
+        return buildResponse(request, HttpStatus.NOT_FOUND, message);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDetails> handleValidationException(MethodArgumentNotValidException ex,
-                                                                  WebRequest request) {
-        String errors = ex.getBindingResult()
-                          .getFieldErrors()
-                          .stream()
-                          .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                          .collect(Collectors.joining(", "));
-
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), HttpStatus.BAD_REQUEST.value(), errors, request.getDescription(false));
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    // 403 Forbidden: access denied
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorDetails> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        return buildResponse(request, HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> globalExceptionHandler(Exception ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+    // 405 Method Not Allowed
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorDetails> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex,
+                                                                 HttpServletRequest request) {
+        String message = "Method " + ex.getMethod() + " not supported. Supported: " + String.join(", ",
+                                                                                                  Objects.requireNonNull(
+                                                                                                                 ex.getSupportedHttpMethods())
+                                                                                                         .stream()
+                                                                                                         .map(HttpMethod::name)
+                                                                                                         .toList());
+        return buildResponse(request, HttpStatus.METHOD_NOT_ALLOWED, message);
     }
 
+    // 409 Conflict: duplicate key or data integrity
     @ExceptionHandler(DuplicateKeyException.class)
-    public ResponseEntity<ErrorDetails> duplicateKeyException(Exception ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), HttpStatus.CONFLICT.value(), ex.getMessage(), request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    public ResponseEntity<ErrorDetails> handleConflict(DuplicateKeyException ex, HttpServletRequest request) {
+        return buildResponse(request, HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    // 500 Internal Server Error: fallback for any other exception
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDetails> handleAll(Exception ex, HttpServletRequest request) {
+        return buildResponse(request, HttpStatus.INTERNAL_SERVER_ERROR,
+                             "An unexpected error occurred: " + ex.getMessage());
+    }
+
+    // Helper to build ErrorDetails and ResponseEntity
+    private ResponseEntity<ErrorDetails> buildResponse(HttpServletRequest request, HttpStatus status, String message) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), status.value(), message, request.getRequestURI());
+        return new ResponseEntity<>(errorDetails, status);
+    }
 }

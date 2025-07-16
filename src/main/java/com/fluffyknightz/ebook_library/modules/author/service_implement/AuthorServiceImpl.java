@@ -5,6 +5,7 @@ import com.fluffyknightz.ebook_library.modules.author.dto.AuthorDTO;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.repository.AuthorRepository;
 import com.fluffyknightz.ebook_library.modules.author.service.AuthorService;
+import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -20,11 +21,10 @@ public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
 
     @Override
-    public Author save(AuthorDTO authorDTO) {
+    public Author save(User user, AuthorDTO authorDTO) {
 
-
-        Author author = new Author(authorDTO.name(), authorDTO.description(), LocalDate.now(), null, LocalDate.now(),
-                                   null, false);
+        Author author = new Author(authorDTO.name(), authorDTO.description(), LocalDate.now(), user, LocalDate.now(),
+                                   user, false);
         try {
             return authorRepository.save(author);
         } catch (DataIntegrityViolationException ex) {
@@ -51,12 +51,13 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public Author update(AuthorDTO authorDTO) {
+    public Author update(User user, AuthorDTO authorDTO) {
         Author author = findById(authorDTO.id());
-        author.setName(authorDTO.name());
+        author.setName(authorDTO.name() != null ? authorDTO.name() : author.getName());
         author.setDescription(authorDTO.description());
         author.setUpdatedDate(LocalDate.now());
-        author.setUpdatedUser(null);
+        author.setUpdatedUser(user);
+        author.setNationality(authorDTO.nationality() != null ? authorDTO.nationality() : author.getNationality());
         return authorRepository.save(author);
     }
 }

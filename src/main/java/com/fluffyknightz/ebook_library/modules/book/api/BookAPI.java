@@ -7,6 +7,7 @@ import com.fluffyknightz.ebook_library.modules.book.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +22,11 @@ public class BookAPI {
     private final BookService bookService;
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Book> addBook(@AuthenticationPrincipal MyUserDetails myUserDetails,
                                         BookDTO bookDTO) throws IOException {
 
-        return new ResponseEntity<>(bookService.save(bookDTO, myUserDetails.getUser()), HttpStatus.CREATED);
+        return new ResponseEntity<>(bookService.save(bookDTO, myUserDetails.user()), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -38,9 +40,10 @@ public class BookAPI {
     }
 
     @PutMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Book> updateBook(@AuthenticationPrincipal MyUserDetails myUserDetails,
                                            BookDTO bookDTO) throws IOException {
-        return ResponseEntity.ok(bookService.update(bookDTO, myUserDetails.getUser()));
+        return ResponseEntity.ok(bookService.update(bookDTO, myUserDetails.user()));
     }
 
     @DeleteMapping("/{id}")
