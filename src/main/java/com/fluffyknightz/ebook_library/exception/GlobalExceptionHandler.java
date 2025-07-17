@@ -1,12 +1,15 @@
 package com.fluffyknightz.ebook_library.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -29,8 +32,8 @@ public class GlobalExceptionHandler {
             message = validationEx.getBindingResult()
                                   .getFieldErrors()
                                   .stream()
-                                  .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                                  .collect(Collectors.joining("; "));
+                                  .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                                  .collect(Collectors.joining(", "));
         } else {
             message = ex.getMessage();
         }
@@ -67,6 +70,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<ErrorDetails> handleConflict(DuplicateKeyException ex, HttpServletRequest request) {
         return buildResponse(request, HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    // 405 Unauthorized: Login Fail
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorDetails> handleBadCredential(HttpServletRequest request) {
+        return buildResponse(request, HttpStatus.UNAUTHORIZED, "Username or Password is incorrect. Please try again.");
+    }
+
+    // 403 Forbidden: Account disabled
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorDetails> handleDisabled(HttpServletRequest request) {
+        return buildResponse(request, HttpStatus.FORBIDDEN, "Your Account is disabled.");
     }
 
     // 500 Internal Server Error: fallback for any other exception

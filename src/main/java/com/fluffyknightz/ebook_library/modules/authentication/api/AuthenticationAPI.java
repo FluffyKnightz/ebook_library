@@ -7,6 +7,7 @@ import com.fluffyknightz.ebook_library.config.security.MyUserDetailsService;
 import com.fluffyknightz.ebook_library.modules.authentication.dto.AuthenticationRequest;
 import com.fluffyknightz.ebook_library.modules.authentication.dto.AuthenticationResponse;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class AuthenticationAPI {
     private final AuthenticatedData authenticatedData;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest authenticationRequest,
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest authenticationRequest,
                                                         HttpServletResponse response) {
         Authentication authentication = manager.authenticate(
                 new UsernamePasswordAuthenticationToken(authenticationRequest.username(),
@@ -65,21 +66,22 @@ public class AuthenticationAPI {
     public ResponseEntity<Void> logout(@AuthenticationPrincipal MyUserDetails myUserDetails,
                                        HttpServletResponse response) {
 
+        // clear auth data
         SecurityContextHolder.clearContext();
 
+        // delete cookie
         ResponseCookie deleteCookie = ResponseCookie.from("jwtToken", "")
                                                     .httpOnly(
                                                             true) // true can use it from javascript or false if only want to use from backend
                                                     .secure(true) // Set to true in production with HTTPS
                                                     .path("/")
-                                                    .maxAge(0) // 10 hours
+                                                    .maxAge(0) // 0 sec
                                                     .sameSite(
                                                             "Strict") // make it 'none' if you different domain, strict for same also localhost is same
                                                     .build();
 
         // Add the cookie to the response
         response.addHeader("Set-Cookie", deleteCookie.toString());
-
 
         return ResponseEntity.ok()
                              .build();

@@ -3,13 +3,13 @@ package com.fluffyknightz.ebook_library.modules.author.service;
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorDTO;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.user.entity.User;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AuthorService {
     Author save(User user, AuthorDTO authorDTO);
 
-    List<Author> findAll();
+    Page<Author> findAll(Pageable pageable);
 
     Author findById(String id);
 

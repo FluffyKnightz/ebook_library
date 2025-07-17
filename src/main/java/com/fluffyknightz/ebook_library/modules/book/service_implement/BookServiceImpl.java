@@ -1,6 +1,5 @@
 package com.fluffyknightz.ebook_library.modules.book.service_implement;
 
-import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
 import com.fluffyknightz.ebook_library.exception.ResourceNotFoundException;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.repository.AuthorRepository;
@@ -18,8 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -87,7 +84,7 @@ public class BookServiceImpl implements BookService {
             Book book = new Book(bookDTO.title(), bookDTO.publishedDate(), bookDTO.synopsis(), bookDTO.coverImage()
                                                                                                       .getOriginalFilename(),
                                  bookDTO.coverImage()
-                                        .getContentType(), key, objectUrl, files, genres, authors, LocalDate.now(),
+                                        .getContentType(), key, objectUrl, 0, files, genres, authors, LocalDate.now(),
                                  user, LocalDate.now(), user, false);
 
             return bookRepository.save(book);

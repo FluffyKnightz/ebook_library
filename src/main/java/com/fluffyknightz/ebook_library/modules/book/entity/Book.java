@@ -47,6 +47,9 @@ public class Book implements Serializable {
     @Field(name = "object_url")
     private String objectURL;
 
+    @Field(name = "download_count")
+    private int downloadCount;
+
     @DBRef
     private List<File> files;
 
@@ -74,8 +77,9 @@ public class Book implements Serializable {
     private boolean isDeleted;
 
     public Book(String title, LocalDate publishedDate, String synopsis, String coverImageName, String coverImageType,
-                String s3Key, String objectURL, List<File> files, List<Genre> genres, List<Author> authors,
-                LocalDate createdDate, User createdUser, LocalDate updatedDate, User updatedUser, boolean isDeleted) {
+                String s3Key, String objectURL, int downloadCount, List<File> files, List<Genre> genres,
+                List<Author> authors, LocalDate createdDate, User createdUser, LocalDate updatedDate, User updatedUser,
+                boolean isDeleted) {
         this.title = title;
         this.publishedDate = publishedDate;
         this.synopsis = synopsis;
@@ -83,6 +87,7 @@ public class Book implements Serializable {
         this.coverImageType = coverImageType;
         this.s3Key = s3Key;
         this.objectURL = objectURL;
+        this.downloadCount = downloadCount;
         this.files = files;
         this.genres = genres;
         this.authors = authors;

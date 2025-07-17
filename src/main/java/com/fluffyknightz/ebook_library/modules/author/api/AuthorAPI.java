@@ -6,13 +6,13 @@ import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.service.AuthorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/authors")
@@ -22,7 +22,6 @@ public class AuthorAPI {
     private final AuthorService authorService;
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Author> createAuthor(@AuthenticationPrincipal MyUserDetails myUserDetails,
                                                @RequestBody @Valid AuthorDTO authorDTO) throws IOException {
         Author author = authorService.save(myUserDetails.user(), authorDTO);
@@ -32,9 +31,10 @@ public class AuthorAPI {
         throw new IOException("Failed to create new author.");
     }
 
+    // url?page=0&size=10&&sort=propertyName[,asc(or)desc -> optional]
     @GetMapping
-    public ResponseEntity<List<Author>> getAllAuthors() {
-        return ResponseEntity.ok(authorService.findAll());
+    public ResponseEntity<Page<Author>> getAllAuthors(Pageable pageable) {
+        return ResponseEntity.ok(authorService.findAll(pageable));
     }
 
     @GetMapping("/{id}")

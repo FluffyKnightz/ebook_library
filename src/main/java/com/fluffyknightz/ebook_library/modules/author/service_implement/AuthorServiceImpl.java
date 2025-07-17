@@ -9,10 +9,11 @@ import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,8 +34,9 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public List<Author> findAll() {
-        return authorRepository.findAll();
+    public Page<Author> findAll(Pageable pageable) {
+
+        return authorRepository.findAll(pageable);
     }
 
     @Override
