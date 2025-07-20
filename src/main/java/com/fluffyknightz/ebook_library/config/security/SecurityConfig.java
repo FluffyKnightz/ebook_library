@@ -1,5 +1,6 @@
 package com.fluffyknightz.ebook_library.config.security;
 
+import com.fluffyknightz.ebook_library.config.security.jwt.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -47,7 +48,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.OPTIONS, "/**")
                         .permitAll()
-                        .requestMatchers("/api/v1/auth/**", "/swagger-ui/**")
+                        .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/actuator/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

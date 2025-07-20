@@ -8,5 +8,5 @@ import java.time.LocalDate;
 public record AuthorDTO(String id,
                         @NotBlank(message = "{validation.name.required}") String name,
                         @NotBlank(message = "{validation.nationality.required}") String nationality,
-                        @NotNull(message = "{validation.birthDate.required}") LocalDate birthDate,
+                        @NotNull(message = "{validation.birthDate.required}") LocalDate birthedDate,
                         @NotBlank(message = "{validation.description.required}") String description) {}

@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @Builder
 @Data
 @Document(collection = "author")
-@CompoundIndex(def = "{'name': 1, 'nationality': 1, 'birth_date': 1}", name = "author_uqx", unique = true)
+@CompoundIndex(def = "{'name': 1, 'nationality': 1, 'birthed_date': 1}", name = "author_uqx", unique = true)
 public class Author implements Serializable {
 
     @Id
@@ -30,8 +30,8 @@ public class Author implements Serializable {
 
     private String nationality;
 
-    @Field(name = "birth_date")
-    private LocalDate birthDate;
+    @Field(name = "birthed_date")
+    private LocalDate birthedDate;
 
     @Field(name = "created_date")
     private LocalDate createdDate;
@@ -50,10 +50,12 @@ public class Author implements Serializable {
     @Field(name = "is_deleted")
     private boolean isDeleted;
 
-    public Author(String name, String description, LocalDate createdDate, User createdUser, LocalDate updatedDate,
-                  User updatedUser, boolean isDeleted) {
+    public Author(String name, String description, String nationality, LocalDate birthedDate, LocalDate createdDate,
+                  User createdUser, LocalDate updatedDate, User updatedUser, boolean isDeleted) {
         this.name = name;
         this.description = description;
+        this.nationality = nationality;
+        this.birthedDate = birthedDate;
         this.createdDate = createdDate;
         this.createdUser = createdUser;
         this.updatedDate = updatedDate;

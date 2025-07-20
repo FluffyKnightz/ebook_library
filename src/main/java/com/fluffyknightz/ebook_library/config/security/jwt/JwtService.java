@@ -1,5 +1,6 @@
-package com.fluffyknightz.ebook_library.config.security;
+package com.fluffyknightz.ebook_library.config.security.jwt;
 
+import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

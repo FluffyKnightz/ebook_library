@@ -5,13 +5,15 @@ import com.fluffyknightz.ebook_library.modules.genre.dto.GenreDTO;
 import com.fluffyknightz.ebook_library.modules.genre.entity.Genre;
 import com.fluffyknightz.ebook_library.modules.genre.repository.GenreRepository;
 import com.fluffyknightz.ebook_library.modules.genre.service.GenreService;
+import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,8 +22,8 @@ public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
 
     @Override
-    public Genre save(GenreDTO genreDTO) {
-        Genre genre = new Genre(genreDTO.name(), LocalDate.now(), null, LocalDate.now(), null, false);
+    public Genre save(User user, GenreDTO genreDTO) {
+        Genre genre = new Genre(genreDTO.name(), LocalDate.now(), user, LocalDate.now(), user, false);
         try {
             return genreRepository.save(genre);
         } catch (DataIntegrityViolationException d) {
@@ -30,8 +32,8 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
-    public List<Genre> findAll() {
-        return genreRepository.findAll();
+    public Page<Genre> findAll(String search, Pageable pageable) {
+        return genreRepository.findAllForTable(search, pageable);
     }
 
     @Override
@@ -48,11 +50,11 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
-    public Genre update(GenreDTO genreDTO) {
+    public Genre update(User user, GenreDTO genreDTO) {
         Genre genre = findById(genreDTO.id());
         genre.setName(genreDTO.name());
         genre.setUpdatedDate(LocalDate.now());
-        genre.setUpdatedUser(null);
+        genre.setUpdatedUser(user);
         return genreRepository.save(genre);
     }
 }

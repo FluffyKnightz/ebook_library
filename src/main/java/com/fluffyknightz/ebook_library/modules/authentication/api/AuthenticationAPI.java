@@ -1,7 +1,7 @@
 package com.fluffyknightz.ebook_library.modules.authentication.api;
 
 import com.fluffyknightz.ebook_library.config.security.AuthenticatedData;
-import com.fluffyknightz.ebook_library.config.security.JwtService;
+import com.fluffyknightz.ebook_library.config.security.jwt.JwtService;
 import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
 import com.fluffyknightz.ebook_library.config.security.MyUserDetailsService;
 import com.fluffyknightz.ebook_library.modules.authentication.dto.AuthenticationRequest;
