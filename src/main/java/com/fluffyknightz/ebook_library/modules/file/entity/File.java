@@ -2,6 +2,7 @@ package com.fluffyknightz.ebook_library.modules.file.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -16,8 +17,8 @@ import java.io.Serializable;
 @Document(collection = "file")
 public class File implements Serializable {
 
-    @Id
-    private String id;
+        @Id
+        private String id;
 
     @Field(name = "file_name")
     private String fileName;
@@ -26,9 +27,11 @@ public class File implements Serializable {
     private String fileType;
 
     @Field(name = "s3_key")
+    @Indexed(unique = true)
     private String s3Key;
 
     @Field(name = "object_url")
+    @Indexed(unique = true)
     private String objectURL;
 
     @Field(name = "is_deleted")

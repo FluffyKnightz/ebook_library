@@ -1,6 +1,7 @@
 package com.fluffyknightz.ebook_library.modules.file.api;
 
 import com.fluffyknightz.ebook_library.modules.file.dto.FileDTO;
+import com.fluffyknightz.ebook_library.modules.file.dto.FileUpdateDto;
 import com.fluffyknightz.ebook_library.modules.file.entity.File;
 import com.fluffyknightz.ebook_library.modules.file.service.FileService;
 import lombok.RequiredArgsConstructor;
@@ -19,29 +20,36 @@ public class FileAPI {
     private final FileService fileService;
 
     @PostMapping
-    public ResponseEntity<List<File>> addFile(FileDTO fileDTO) throws IOException {
-        return new ResponseEntity<>(fileService.save(fileDTO.files()), HttpStatus.CREATED);
+    public ResponseEntity<Void> create(FileDTO fileDTO) throws IOException {
+        fileService.save(fileDTO.files());
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<File>> getAllFiles() {
-        return ResponseEntity.ok(fileService.findAll());
+    public ResponseEntity<List<File>> getForTable() {
+        List<File> files = fileService.findAll();
+        if (files.isEmpty()) {
+            return ResponseEntity.noContent()
+                                 .build();
+        }
+        return new ResponseEntity<>(files, HttpStatus.FOUND);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<File> getFileById(@PathVariable String id) {
+    public ResponseEntity<File> getById(@PathVariable String id) {
         return ResponseEntity.ok(fileService.findById(id));
     }
 
     @PutMapping
-    public ResponseEntity<File> updateFile(FileDTO fileDTO) {
-        return ResponseEntity.ok(fileService.update(fileDTO));
+    public ResponseEntity<Void> update(FileUpdateDto fileUpdateDto) throws IOException {
+        fileService.update(fileUpdateDto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFile(@PathVariable String id) throws IOException {
+    public ResponseEntity<Void> delete(@PathVariable String id) throws IOException {
         fileService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity.ok()
                              .build();
     }
 }

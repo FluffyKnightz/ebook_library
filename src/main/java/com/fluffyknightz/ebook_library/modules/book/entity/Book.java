@@ -7,6 +7,7 @@ import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -42,9 +43,11 @@ public class Book implements Serializable {
     private String coverImageType;
 
     @Field(name = "s3_key")
+    @Indexed(unique = true)
     private String s3Key;
 
     @Field(name = "object_url")
+    @Indexed(unique = true)
     private String objectURL;
 
     @Field(name = "download_count")

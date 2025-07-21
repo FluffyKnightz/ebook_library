@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
 @Service
@@ -26,20 +25,20 @@ public class AuthorServiceImpl implements AuthorService {
     private final AuthorViewRepository authorViewRepository;
 
     @Override
-    public Author save(User user, AuthorDTO authorDTO) throws IOException {
+    public void save(User user, AuthorDTO authorDTO) {
 
         Author author = new Author(authorDTO.name(), authorDTO.description(), authorDTO.nationality(),
                                    authorDTO.birthedDate(), LocalDate.now(), user, LocalDate.now(), user, false);
         try {
-            return authorRepository.save(author);
+            authorRepository.insert(author);
         } catch (DataIntegrityViolationException ex) {
             throw new DuplicateKeyException("Author with username: " + authorDTO.name() + " already exists");
         }
     }
 
     @Override
-    public Page<AuthorView> findAll(String search, Pageable pageable) {
-        return authorViewRepository.findAllForTable(search, pageable);
+    public Page<AuthorView> findForTable(String search, Pageable pageable) {
+        return authorViewRepository.findForTable(search, pageable);
     }
 
     @Override
@@ -56,7 +55,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public Author update(User user, AuthorDTO authorDTO) {
+    public void update(User user, AuthorDTO authorDTO) {
         Author author = findById(authorDTO.id());
         author.setName(authorDTO.name());
         author.setDescription(authorDTO.description());
@@ -64,6 +63,10 @@ public class AuthorServiceImpl implements AuthorService {
         author.setBirthedDate(authorDTO.birthedDate());
         author.setUpdatedDate(LocalDate.now());
         author.setUpdatedUser(user);
-        return authorRepository.save(author);
+        try {
+            authorRepository.save(author);
+        } catch (DataIntegrityViolationException ex) {
+            throw new DuplicateKeyException("Author with username: " + authorDTO.name() + " already exists");
+        }
     }
 }

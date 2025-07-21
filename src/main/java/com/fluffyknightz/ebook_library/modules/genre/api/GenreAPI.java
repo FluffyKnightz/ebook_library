@@ -20,16 +20,16 @@ public class GenreAPI {
     private final GenreService genreService;
 
     @PostMapping
-    public ResponseEntity<Void> createGenre(@AuthenticationPrincipal MyUserDetails myUserDetails, @RequestBody GenreDTO genreDTO) {
+    public ResponseEntity<Void> create(@AuthenticationPrincipal MyUserDetails myUserDetails, @RequestBody GenreDTO genreDTO) {
         genreService.save(myUserDetails.user(), genreDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     // url?page=0&size=10&&sort=propertyName[,asc(or)desc -> optional]
     @GetMapping
-    public ResponseEntity<Page<Genre>> getGenresForTable(@RequestParam(required = false) String search,
+    public ResponseEntity<Page<Genre>> getForTable(@RequestParam(required = false) String search,
                                                          Pageable pageable) {
-        Page<Genre> genres = genreService.findAll(search, pageable);
+        Page<Genre> genres = genreService.findForTable(search, pageable);
         if (genres.isEmpty()) {
             return ResponseEntity.noContent()
                                  .build();
@@ -38,21 +38,21 @@ public class GenreAPI {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Genre> getGenreById(@PathVariable String id) {
+    public ResponseEntity<Genre> getById(@PathVariable String id) {
         Genre genre = genreService.findById(id);
         return new ResponseEntity<>(genre, HttpStatus.FOUND);
     }
 
     @PutMapping
-    public ResponseEntity<Genre> updateGenre(@AuthenticationPrincipal MyUserDetails myUserDetails, @RequestBody GenreDTO genreDTO) {
+    public ResponseEntity<Void> update(@AuthenticationPrincipal MyUserDetails myUserDetails, @RequestBody GenreDTO genreDTO) {
         genreService.update(myUserDetails.user(), genreDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGenre(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         genreService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity.ok()
                              .build();
     }
 }

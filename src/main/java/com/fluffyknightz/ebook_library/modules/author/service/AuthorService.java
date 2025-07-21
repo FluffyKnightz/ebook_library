@@ -10,13 +10,13 @@ import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 
 public interface AuthorService {
-    Author save(User user, AuthorDTO authorDTO) throws IOException;
+    void save(User user, AuthorDTO authorDTO) throws IOException;
 
-    Page<AuthorView> findAll(String search, Pageable pageable);
+    Page<AuthorView> findForTable(String search, Pageable pageable);
 
     Author findById(String id);
 
     void delete(String id);
 
-    Author update(User user, AuthorDTO authorDTO);
+    void update(User user, AuthorDTO authorDTO);
 }

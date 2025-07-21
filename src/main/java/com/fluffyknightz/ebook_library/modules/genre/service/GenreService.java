@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface GenreService {
     Genre save(User user, GenreDTO genreDTO);
 
-    Page<Genre> findAll(String search, Pageable pageable);
+    Page<Genre> findForTable(String search, Pageable pageable);
 
     Genre findById(String id);
 

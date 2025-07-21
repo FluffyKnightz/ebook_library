@@ -9,10 +9,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -23,11 +23,11 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public User save(UserDTO userDTO) {
+    public void save(UserDTO userDTO) {
         User user = new User(userDTO.username(), userDTO.email(), passwordEncoder.encode(userDTO.password()),
                              userDTO.role(), false);
         try {
-            return userRepository.save(user);
+            userRepository.insert(user);
         } catch (DataIntegrityViolationException ex) {
             throw new DuplicateKeyException("User with username: " + userDTO.username() + " already exists");
         }
@@ -35,8 +35,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public Page<User> findForTable(String search, Pageable pageable) {
+        return userRepository.findForTable(search, pageable);
     }
 
     @Override
@@ -53,13 +53,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User update(UserDTO userDTO) {
+    public void update(UserDTO userDTO) {
         User user = findById(userDTO.id());
         user.setUsername(userDTO.username());
         user.setEmail(userDTO.email());
         user.setPassword(userDTO.password());
         user.setRole(userDTO.role());
-        return userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            throw new DuplicateKeyException("User with username: " + userDTO.username() + " already exists");
+        }
     }
 
 }

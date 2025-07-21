@@ -3,7 +3,6 @@ package com.fluffyknightz.ebook_library.modules.author.api;
 import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorDTO;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
-import com.fluffyknightz.ebook_library.modules.author.repository.AuthorViewRepository;
 import com.fluffyknightz.ebook_library.modules.author.service.AuthorService;
 import com.fluffyknightz.ebook_library.modules.author.view.AuthorView;
 import jakarta.validation.Valid;
@@ -23,46 +22,43 @@ import java.io.IOException;
 public class AuthorAPI {
 
     private final AuthorService authorService;
-    private final AuthorViewRepository authorViewRepository;
 
     @PostMapping
-    public ResponseEntity<Void> createAuthor(@AuthenticationPrincipal MyUserDetails myUserDetails,
-                                             @RequestBody @Valid AuthorDTO authorDTO) throws IOException {
+    public ResponseEntity<Void> create(@AuthenticationPrincipal MyUserDetails myUserDetails,
+                                       @RequestBody @Valid AuthorDTO authorDTO) throws IOException {
         authorService.save(myUserDetails.user(), authorDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     // url?page=0&size=10&&sort=propertyName[,asc(or)desc -> optional]
     @GetMapping
-    public ResponseEntity<Page<AuthorView>> getAuthorsForTable(@RequestParam(required = false) String search,
-                                                               Pageable pageable) {
-        Page<AuthorView> authors = authorService.findAll(search, pageable);
+    public ResponseEntity<Page<AuthorView>> getForTable(@RequestParam(required = false) String search,
+                                                        Pageable pageable) {
+        Page<AuthorView> authors = authorService.findForTable(search, pageable);
         if (authors.isEmpty()) {
             return ResponseEntity.noContent()
                                  .build();
         }
         return new ResponseEntity<>(authors, HttpStatus.FOUND);
-
-
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Author> getAuthorById(@PathVariable String id) {
+    public ResponseEntity<Author> getById(@PathVariable String id) {
         Author author = authorService.findById(id);
         return new ResponseEntity<>(author, HttpStatus.FOUND);
     }
 
     @PutMapping
-    public ResponseEntity<Void> updateAuthor(@AuthenticationPrincipal MyUserDetails myUserDetails,
-                                             @RequestBody AuthorDTO authorDTO) {
+    public ResponseEntity<Void> update(@AuthenticationPrincipal MyUserDetails myUserDetails,
+                                       @RequestBody AuthorDTO authorDTO) {
         authorService.update(myUserDetails.user(), authorDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAuthor(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         authorService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity.ok()
                              .build();
     }
 }

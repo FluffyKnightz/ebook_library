@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface BookService {
-    Book save(BookDTO bookDTO, User user) throws IOException;
+    void save(BookDTO bookDTO, User user) throws IOException;
 
     List<Book> findAll();
 
@@ -16,5 +16,5 @@ public interface BookService {
 
     void delete(String id);
 
-    Book update(BookDTO bookDTO, User user) throws IOException;
+    void update(BookDTO bookDTO, User user) throws IOException;
 }

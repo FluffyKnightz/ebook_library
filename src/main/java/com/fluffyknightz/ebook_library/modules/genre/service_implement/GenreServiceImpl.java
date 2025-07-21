@@ -4,7 +4,9 @@ import com.fluffyknightz.ebook_library.exception.ResourceNotFoundException;
 import com.fluffyknightz.ebook_library.modules.genre.dto.GenreDTO;
 import com.fluffyknightz.ebook_library.modules.genre.entity.Genre;
 import com.fluffyknightz.ebook_library.modules.genre.repository.GenreRepository;
+import com.fluffyknightz.ebook_library.modules.genre.repository.GenreViewRepository;
 import com.fluffyknightz.ebook_library.modules.genre.service.GenreService;
+import com.fluffyknightz.ebook_library.modules.genre.view.GenreView;
 import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,20 +22,21 @@ import java.time.LocalDate;
 public class GenreServiceImpl implements GenreService {
 
     private final GenreRepository genreRepository;
+    private final GenreViewRepository genreViewRepository;
 
     @Override
     public Genre save(User user, GenreDTO genreDTO) {
         Genre genre = new Genre(genreDTO.name(), LocalDate.now(), user, LocalDate.now(), user, false);
         try {
-            return genreRepository.save(genre);
+            return genreRepository.insert(genre);
         } catch (DataIntegrityViolationException d) {
             throw new DuplicateKeyException("Genre with name: " + genreDTO.name() + " already exists");
         }
     }
 
     @Override
-    public Page<Genre> findAll(String search, Pageable pageable) {
-        return genreRepository.findAllForTable(search, pageable);
+    public Page<GenreView> findForTable(String search, Pageable pageable) {
+        return genreViewRepository.findAllForTable(search, pageable);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.fluffyknightz.ebook_library.modules.user.entity.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -29,6 +30,20 @@ public class Author implements Serializable {
     private String description;
 
     private String nationality;
+
+    @Field(name = "image_name")
+    private String imageName;
+
+    @Field(name = "image_type")
+    private String imageType;
+
+    @Field(name = "s3_key")
+    @Indexed(unique = true)
+    private String s3Key;
+
+    @Field(name = "object_url")
+    @Indexed(unique = true)
+    private String objectURL;
 
     @Field(name = "birthed_date")
     private LocalDate birthedDate;
