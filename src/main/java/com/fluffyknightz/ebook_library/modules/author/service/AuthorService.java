@@ -1,6 +1,7 @@
 package com.fluffyknightz.ebook_library.modules.author.service;
 
-import com.fluffyknightz.ebook_library.modules.author.dto.AuthorDTO;
+import com.fluffyknightz.ebook_library.modules.author.dto.AuthorCreateDTO;
+import com.fluffyknightz.ebook_library.modules.author.dto.AuthorUpdateDTO;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.view.AuthorView;
 import com.fluffyknightz.ebook_library.modules.user.entity.User;
@@ -10,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 
 public interface AuthorService {
-    void save(User user, AuthorDTO authorDTO) throws IOException;
+    void save(User user, AuthorCreateDTO authorCreateDTO) throws IOException;
 
     Page<AuthorView> findForTable(String search, Pageable pageable);
 
@@ -18,5 +19,5 @@ public interface AuthorService {
 
     void delete(String id);
 
-    void update(User user, AuthorDTO authorDTO);
+    void update(User user, AuthorUpdateDTO authorUpdateDTO) throws IOException;
 }

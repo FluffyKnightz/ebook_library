@@ -1,5 +1,6 @@
 package com.fluffyknightz.ebook_library.config.s3_object;
 
+import com.fluffyknightz.ebook_library.config.s3_object.dto.S3UploadResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +23,11 @@ public class S3ObjectUsage {
 
     private final S3Client s3Client;
 
-    public void create(MultipartFile file, String key, String bucket) throws IOException {
+    public S3UploadResult create(MultipartFile file, String bucket, String region) throws IOException {
+
+        String key = UUID.randomUUID() + "_" + file.getOriginalFilename() + "_" + LocalDateTime.now();
+        String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
+
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                                                             .bucket(bucket)
                                                             .contentType(file.getContentType())
@@ -29,10 +36,11 @@ public class S3ObjectUsage {
                                                             .bucketKeyEnabled(true)
                                                             .build();
         s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        return new S3UploadResult(key, objectUrl);
     }
 
     public void delete(List<String> keys, String bucket) {
-        try {
+
             List<ObjectIdentifier> objectsToDelete = keys.stream()
                                                          .map(key -> ObjectIdentifier.builder()
                                                                                      .key(key)
@@ -43,8 +51,6 @@ public class S3ObjectUsage {
                                                      .bucket(bucket)
                                                      .delete(d -> d.objects(objectsToDelete)
                                                                    .quiet(false)));// set true to only response error, false response list for success at delete
-        } catch (Exception e) {
-            log.warn("Tried to delete S3 objects but failed (likely not uploaded): {}", e.getMessage());
-        }
+
     }
 }

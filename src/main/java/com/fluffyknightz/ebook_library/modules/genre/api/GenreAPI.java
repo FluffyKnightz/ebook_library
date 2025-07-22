@@ -4,6 +4,7 @@ import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
 import com.fluffyknightz.ebook_library.modules.genre.dto.GenreDTO;
 import com.fluffyknightz.ebook_library.modules.genre.entity.Genre;
 import com.fluffyknightz.ebook_library.modules.genre.service.GenreService;
+import com.fluffyknightz.ebook_library.modules.genre.view.GenreView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +28,9 @@ public class GenreAPI {
 
     // url?page=0&size=10&&sort=propertyName[,asc(or)desc -> optional]
     @GetMapping
-    public ResponseEntity<Page<Genre>> getForTable(@RequestParam(required = false) String search,
+    public ResponseEntity<Page<GenreView>> getForTable(@RequestParam(required = false) String search,
                                                          Pageable pageable) {
-        Page<Genre> genres = genreService.findForTable(search, pageable);
+        Page<GenreView> genres = genreService.findForTable(search, pageable);
         if (genres.isEmpty()) {
             return ResponseEntity.noContent()
                                  .build();

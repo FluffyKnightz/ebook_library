@@ -1,5 +1,6 @@
 package com.fluffyknightz.ebook_library.exception;
 
+import io.awspring.cloud.s3.S3Exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DuplicateKeyException;
@@ -82,6 +83,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<ErrorDetails> handleDisabled(HttpServletRequest request) {
         return buildResponse(request, HttpStatus.FORBIDDEN, "Your Account is disabled.");
+    }
+
+
+    @ExceptionHandler(S3Exception.class)
+    public ResponseEntity<ErrorDetails> handleS3(Exception ex, HttpServletRequest request) {
+        return buildResponse(request, HttpStatus.BAD_GATEWAY, "Failed to perform S3 operation. Errors: " + ex.getMessage());
     }
 
     // 500 Internal Server Error: fallback for any other exception

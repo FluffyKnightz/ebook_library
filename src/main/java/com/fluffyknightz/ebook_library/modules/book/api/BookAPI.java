@@ -1,7 +1,8 @@
 package com.fluffyknightz.ebook_library.modules.book.api;
 
 import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
-import com.fluffyknightz.ebook_library.modules.book.dto.BookDTO;
+import com.fluffyknightz.ebook_library.modules.book.dto.BookCreateDTO;
+import com.fluffyknightz.ebook_library.modules.book.dto.BookUpdateDTO;
 import com.fluffyknightz.ebook_library.modules.book.entity.Book;
 import com.fluffyknightz.ebook_library.modules.book.service.BookService;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,8 @@ public class BookAPI {
 
     @PostMapping
     public ResponseEntity<Void> create(@AuthenticationPrincipal MyUserDetails myUserDetails,
-                                       BookDTO bookDTO) throws IOException {
-        bookService.save(bookDTO, myUserDetails.user());
+                                       BookCreateDTO bookCreateDTO) throws IOException {
+        bookService.save(bookCreateDTO, myUserDetails.user());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -44,8 +45,8 @@ public class BookAPI {
 
     @PutMapping
     public ResponseEntity<Void> update(@AuthenticationPrincipal MyUserDetails myUserDetails,
-                                       BookDTO bookDTO) throws IOException {
-        bookService.update(bookDTO, myUserDetails.user());
+                                       BookUpdateDTO bookUpdateDTO) throws IOException {
+        bookService.update(bookUpdateDTO, myUserDetails.user());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

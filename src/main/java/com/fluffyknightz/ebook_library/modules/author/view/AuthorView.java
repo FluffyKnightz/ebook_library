@@ -1,6 +1,9 @@
 package com.fluffyknightz.ebook_library.modules.author.view;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -17,6 +20,9 @@ public class AuthorView {
     private String name;
     private String description;
     private String nationality;
+
+    @Field("image_url")
+    private String imageURL;
 
     @Field("birthed_date")
     private LocalDate birthedDate;

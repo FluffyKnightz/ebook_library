@@ -65,11 +65,16 @@ public class Author implements Serializable {
     @Field(name = "is_deleted")
     private boolean isDeleted;
 
-    public Author(String name, String description, String nationality, LocalDate birthedDate, LocalDate createdDate,
-                  User createdUser, LocalDate updatedDate, User updatedUser, boolean isDeleted) {
+    public Author(String name, String description, String nationality, String imageName, String imageType, String s3Key,
+                  String objectURL, LocalDate birthedDate, LocalDate createdDate, User createdUser,
+                  LocalDate updatedDate, User updatedUser, boolean isDeleted) {
         this.name = name;
         this.description = description;
         this.nationality = nationality;
+        this.imageName = imageName;
+        this.imageType = imageType;
+        this.s3Key = s3Key;
+        this.objectURL = objectURL;
         this.birthedDate = birthedDate;
         this.createdDate = createdDate;
         this.createdUser = createdUser;

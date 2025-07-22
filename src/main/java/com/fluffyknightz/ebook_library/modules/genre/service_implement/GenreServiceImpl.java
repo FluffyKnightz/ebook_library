@@ -25,10 +25,10 @@ public class GenreServiceImpl implements GenreService {
     private final GenreViewRepository genreViewRepository;
 
     @Override
-    public Genre save(User user, GenreDTO genreDTO) {
+    public void save(User user, GenreDTO genreDTO) {
         Genre genre = new Genre(genreDTO.name(), LocalDate.now(), user, LocalDate.now(), user, false);
         try {
-            return genreRepository.insert(genre);
+            genreRepository.insert(genre);
         } catch (DataIntegrityViolationException d) {
             throw new DuplicateKeyException("Genre with name: " + genreDTO.name() + " already exists");
         }
@@ -36,7 +36,7 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     public Page<GenreView> findForTable(String search, Pageable pageable) {
-        return genreViewRepository.findAllForTable(search, pageable);
+        return genreViewRepository.findForTable(search, pageable);
     }
 
     @Override
@@ -53,11 +53,15 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
-    public Genre update(User user, GenreDTO genreDTO) {
+    public void update(User user, GenreDTO genreDTO) {
         Genre genre = findById(genreDTO.id());
         genre.setName(genreDTO.name());
         genre.setUpdatedDate(LocalDate.now());
         genre.setUpdatedUser(user);
-        return genreRepository.save(genre);
+        try {
+            genreRepository.save(genre);
+        } catch (DataIntegrityViolationException d) {
+            throw new DuplicateKeyException("Genre with name: " + genreDTO.name() + " already exists");
+        }
     }
 }

@@ -1,7 +1,8 @@
 package com.fluffyknightz.ebook_library.modules.author.api;
 
 import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
-import com.fluffyknightz.ebook_library.modules.author.dto.AuthorDTO;
+import com.fluffyknightz.ebook_library.modules.author.dto.AuthorCreateDTO;
+import com.fluffyknightz.ebook_library.modules.author.dto.AuthorUpdateDTO;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.service.AuthorService;
 import com.fluffyknightz.ebook_library.modules.author.view.AuthorView;
@@ -25,8 +26,8 @@ public class AuthorAPI {
 
     @PostMapping
     public ResponseEntity<Void> create(@AuthenticationPrincipal MyUserDetails myUserDetails,
-                                       @RequestBody @Valid AuthorDTO authorDTO) throws IOException {
-        authorService.save(myUserDetails.user(), authorDTO);
+                                       @RequestBody @Valid AuthorCreateDTO authorCreateDTO) throws IOException {
+        authorService.save(myUserDetails.user(), authorCreateDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -50,8 +51,8 @@ public class AuthorAPI {
 
     @PutMapping
     public ResponseEntity<Void> update(@AuthenticationPrincipal MyUserDetails myUserDetails,
-                                       @RequestBody AuthorDTO authorDTO) {
-        authorService.update(myUserDetails.user(), authorDTO);
+                                       @RequestBody AuthorUpdateDTO authorUpdateDTO) throws IOException {
+        authorService.update(myUserDetails.user(), authorUpdateDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

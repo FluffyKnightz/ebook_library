@@ -48,6 +48,8 @@ public class AuthorViewCreate {
                                                                            "birthed_date", "created_date",
                                                                            "updated_date", "is_deleted"),
 
+                                                       Projections.computed("image_url", "$object_url"),
+
                                                        Projections.computed("created_user_id",
                                                                             "$created_user_info._id"),
 

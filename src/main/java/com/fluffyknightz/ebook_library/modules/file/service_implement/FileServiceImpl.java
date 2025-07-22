@@ -1,13 +1,13 @@
 package com.fluffyknightz.ebook_library.modules.file.service_implement;
 
 import com.fluffyknightz.ebook_library.config.s3_object.S3ObjectUsage;
+import com.fluffyknightz.ebook_library.config.s3_object.dto.S3UploadResult;
 import com.fluffyknightz.ebook_library.exception.ResourceNotFoundException;
 import com.fluffyknightz.ebook_library.modules.file.dto.FileUpdateDto;
 import com.fluffyknightz.ebook_library.modules.file.entity.File;
 import com.fluffyknightz.ebook_library.modules.file.repository.FileRepository;
 import com.fluffyknightz.ebook_library.modules.file.service.FileService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -15,11 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -40,19 +38,19 @@ public class FileServiceImpl implements FileService {
         List<String> keys = new ArrayList<>();
         List<File> filesList = new ArrayList<>();
         for (MultipartFile f : files) {
-            String key = UUID.randomUUID() + "_" + f.getOriginalFilename() + "_" + LocalDateTime.now();
 
+            S3UploadResult s3UploadResult;
             try {
-                s3ObjectUsage.create(f, key, bucket);
+                s3UploadResult = s3ObjectUsage.create(f, bucket, region);
             } catch (Exception ex) {
                 s3ObjectUsage.delete(keys, bucket);
                 throw new IOException("Error saving files: " + ex.getMessage());
             }
 
-            keys.add(key);
+            keys.add(s3UploadResult.s3Key());
 
-            String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
-            File file = new File(f.getOriginalFilename(), f.getContentType(), key, objectUrl, false);
+            File file = new File(f.getOriginalFilename(), f.getContentType(), s3UploadResult.s3Key(),
+                                 s3UploadResult.objectUrl(), false);
             filesList.add(file);
         }
         try {
@@ -84,19 +82,18 @@ public class FileServiceImpl implements FileService {
     public void update(FileUpdateDto fileUpdateDto) throws IOException {
         File file = findById(fileUpdateDto.id());
         s3ObjectUsage.delete(Collections.singletonList(file.getS3Key()), bucket);
-        String key = UUID.randomUUID() + "_" + fileUpdateDto.file()
-                                                            .getOriginalFilename() + "_" + LocalDateTime.now();
-
+        S3UploadResult s3UploadResult;
         try {
-            s3ObjectUsage.create(fileUpdateDto.file(), key, bucket);
+            s3UploadResult = s3ObjectUsage.create(fileUpdateDto.file(), bucket, region);
         } catch (Exception ex) {
             throw new IOException("Error saving files: " + ex.getMessage());
         }
 
-        String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
+
         file = new File(fileUpdateDto.file()
                                      .getOriginalFilename(), fileUpdateDto.file()
-                                                                          .getContentType(), key, objectUrl, false);
+                                                                          .getContentType(), s3UploadResult.s3Key(),
+                        s3UploadResult.objectUrl(), false);
         try {
             fileRepository.save(file);
         } catch (DataIntegrityViolationException ex) {

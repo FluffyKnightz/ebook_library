@@ -1,10 +1,12 @@
 package com.fluffyknightz.ebook_library.modules.book.service_implement;
 
 import com.fluffyknightz.ebook_library.config.s3_object.S3ObjectUsage;
+import com.fluffyknightz.ebook_library.config.s3_object.dto.S3UploadResult;
 import com.fluffyknightz.ebook_library.exception.ResourceNotFoundException;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.repository.AuthorRepository;
-import com.fluffyknightz.ebook_library.modules.book.dto.BookDTO;
+import com.fluffyknightz.ebook_library.modules.book.dto.BookCreateDTO;
+import com.fluffyknightz.ebook_library.modules.book.dto.BookUpdateDTO;
 import com.fluffyknightz.ebook_library.modules.book.entity.Book;
 import com.fluffyknightz.ebook_library.modules.book.repository.BookRepository;
 import com.fluffyknightz.ebook_library.modules.book.service.BookService;
@@ -23,10 +25,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -47,44 +47,38 @@ public class BookServiceImpl implements BookService {
     private String region;
 
     @Override
-    public void save(BookDTO bookDTO, User user) throws IOException {
+    public void save(BookCreateDTO bookCreateDTO, User user) throws IOException {
 
-        // image save in s3
-        String key = UUID.randomUUID() + "_" + bookDTO.coverImage()
-                                                      .getOriginalFilename() + "_" + LocalDateTime.now();
-
+        S3UploadResult s3UploadResult;
         try {
-            s3ObjectUsage.create(bookDTO.coverImage(), key, bucket);
+            s3UploadResult = s3ObjectUsage.create(bookCreateDTO.coverImage(), bucket, region);
         } catch (IOException ex) {
             throw new IOException("Error saving Cover Image: " + ex.getMessage());
         }
 
-        //create object url
-        String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
-
-
         try {
-            List<Author> authors = authorRepository.findAllByNameIn(bookDTO.authors());
-            List<Genre> genres = genreRepository.findAllByNameIn(bookDTO.genres());
-            List<File> files = fileService.save(bookDTO.files());
+            List<Author> authors = authorRepository.findAllByNameIn(bookCreateDTO.authors());
+            List<Genre> genres = genreRepository.findAllByNameIn(bookCreateDTO.genres());
+            List<File> files = fileService.save(bookCreateDTO.files());
 
-            Book book = new Book(bookDTO.title(), bookDTO.publishedDate(), bookDTO.synopsis(), bookDTO.coverImage()
-                                                                                                      .getOriginalFilename(),
-                                 bookDTO.coverImage()
-                                        .getContentType(), key, objectUrl, 0, files, genres, authors, LocalDate.now(),
-                                 user, LocalDate.now(), user, false);
+            Book book = new Book(bookCreateDTO.title(), bookCreateDTO.publishedDate(), bookCreateDTO.synopsis(),
+                                 bookCreateDTO.coverImage()
+                                              .getOriginalFilename(), bookCreateDTO.coverImage()
+                                                                                   .getContentType(),
+                                 s3UploadResult.s3Key(), s3UploadResult.objectUrl(), 0, files, genres, authors,
+                                 LocalDate.now(), user, LocalDate.now(), user, false);
 
             bookRepository.insert(book);
 
         } catch (DataIntegrityViolationException ex) {
             //delete if fail
-            s3ObjectUsage.delete(Collections.singletonList(key), bucket);
+            s3ObjectUsage.delete(Collections.singletonList(s3UploadResult.s3Key()), bucket);
             throw new DuplicateKeyException(
-                    "Book with title: " + bookDTO.title() + "with published date: " + bookDTO.publishedDate() + "  already exists");
+                    "Book with title: " + bookCreateDTO.title() + "with published date: " + bookCreateDTO.publishedDate() + "  already exists");
 
         } catch (Exception ex) {
             //delete if fail
-            s3ObjectUsage.delete(Collections.singletonList(key), bucket);
+            s3ObjectUsage.delete(Collections.singletonList(s3UploadResult.s3Key()), bucket);
             throw new IOException("Error saving book: " + ex.getMessage());
         }
     }
@@ -108,40 +102,46 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public void update(BookDTO bookDTO, User user) throws IOException {
+    public void update(BookUpdateDTO bookUpdateDTO, User user) throws IOException {
 
-        String key = UUID.randomUUID() + "_" + bookDTO.coverImage()
-                                                      .getOriginalFilename();
 
-        Book book = findById(bookDTO.id());
-        try {
-            if (!bookDTO.coverImage()
-                        .isEmpty()) {
+        Book book = findById(bookUpdateDTO.id());
+        S3UploadResult s3UploadResult;
 
-                // delete previous image
-                s3ObjectUsage.delete(Collections.singletonList(book.getS3Key()), bucket);
+        if (!bookUpdateDTO.coverImage()
+                          .isEmpty()) {
 
-                //create new image
-                s3ObjectUsage.create(bookDTO.coverImage(), key, bucket);
-
-                //create object url
-                String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
-
-                book.setCoverImageName(bookDTO.coverImage()
-                                              .getOriginalFilename());
-                book.setCoverImageType(bookDTO.coverImage()
-                                              .getContentType());
-                book.setSynopsis(key);
-                book.setObjectURL(objectUrl);
+            try {
+                // create new image 1st
+                s3UploadResult = s3ObjectUsage.create(bookUpdateDTO.coverImage(), bucket, region);
+            } catch (IOException ex) {
+                throw new IOException("Error saving Cover Image: " + ex.getMessage());
             }
 
-            List<Author> authors = authorRepository.findAllByNameIn(bookDTO.authors());
-            List<Genre> genres = genreRepository.findAllByNameIn(bookDTO.genres());
-            List<File> files = fileService.save(bookDTO.files());
+            try {
+                // delete previous image
+                s3ObjectUsage.delete(Collections.singletonList(book.getS3Key()), bucket);
+            } catch (Exception e) {
+                log.warn("Tried to delete S3 objects but failed (likely not uploaded): {}", e.getMessage());
+            }
 
-            book.setTitle(bookDTO.title());
-            book.setPublishedDate(bookDTO.publishedDate());
-            book.setSynopsis(bookDTO.synopsis());
+            book.setCoverImageName(bookUpdateDTO.coverImage()
+                                                .getOriginalFilename());
+            book.setCoverImageType(bookUpdateDTO.coverImage()
+                                                .getContentType());
+            book.setSynopsis(s3UploadResult.s3Key());
+            book.setObjectURL(s3UploadResult.objectUrl());
+        }
+
+        try {
+
+            List<Author> authors = authorRepository.findAllByNameIn(bookUpdateDTO.authors());
+            List<Genre> genres = genreRepository.findAllByNameIn(bookUpdateDTO.genres());
+            List<File> files = fileService.save(bookUpdateDTO.files());
+
+            book.setTitle(bookUpdateDTO.title());
+            book.setPublishedDate(bookUpdateDTO.publishedDate());
+            book.setSynopsis(bookUpdateDTO.synopsis());
             book.setAuthors(authors);
             book.setGenres(genres);
             book.setFiles(files);
@@ -151,9 +151,9 @@ public class BookServiceImpl implements BookService {
 
         } catch (DataIntegrityViolationException ex) {
             //delete if fail
-            s3ObjectUsage.delete(Collections.singletonList(key), bucket);
+            s3ObjectUsage.delete(Collections.singletonList(s3UploadResult), bucket);
             throw new DuplicateKeyException(
-                    "Book with title: " + bookDTO.title() + "with published date: " + bookDTO.publishedDate() + "  already exists");
+                    "Book with title: " + bookUpdateDTO.title() + "with published date: " + bookUpdateDTO.publishedDate() + "  already exists");
 
         } catch (Exception ex) {
             //delete if fail
