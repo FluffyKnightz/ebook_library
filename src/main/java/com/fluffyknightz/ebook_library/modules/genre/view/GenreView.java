@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @AllArgsConstructor
@@ -14,7 +15,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 @Document(collection = "genre_view")
-public class GenreView {
+public class GenreView implements Serializable {
 
     private String id;
     private String name;

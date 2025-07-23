@@ -41,19 +41,33 @@ public class AuthorServiceImpl implements AuthorService {
 
     public void save(User user, AuthorCreateDTO authorCreateDTO) throws IOException {
 
-        S3UploadResult s3UploadResult = s3ObjectUsage.create(authorCreateDTO.image(), bucket, region);
-
+        Author author = new Author();
+        S3UploadResult s3UploadResult = null;
         //to check db commit is success;
         boolean dbOk = false;
 
+        if (authorCreateDTO.image() != null && !authorCreateDTO.image()
+                                                               .isEmpty()) {
+            s3UploadResult = s3ObjectUsage.create(authorCreateDTO.image(), bucket, region);
+
+            author.setImageName(authorCreateDTO.image()
+                                               .getOriginalFilename());
+            author.setImageType(authorCreateDTO.image()
+                                               .getContentType());
+            author.setS3Key(s3UploadResult.s3Key());
+            author.setObjectURL(s3UploadResult.objectUrl());
+        }
+
+
         try {
-            Author author = new Author(authorCreateDTO.name(), authorCreateDTO.description(),
-                                       authorCreateDTO.nationality(), authorCreateDTO.image()
-                                                                                     .getOriginalFilename(),
-                                       authorCreateDTO.image()
-                                                      .getContentType(), s3UploadResult.s3Key(),
-                                       s3UploadResult.objectUrl(), authorCreateDTO.birthedDate(), LocalDate.now(), user,
-                                       LocalDate.now(), user, false);
+            author.setName(authorCreateDTO.name());
+            author.setDescription(authorCreateDTO.description());
+            author.setNationality(authorCreateDTO.nationality());
+            author.setBirthedDate(authorCreateDTO.birthedDate());
+            author.setCreatedDate(LocalDate.now());
+            author.setCreatedUser(user);
+            author.setUpdatedDate(LocalDate.now());
+            author.setUpdatedUser(user);
             authorRepository.insert(author);
             dbOk = true;
 
@@ -64,7 +78,7 @@ public class AuthorServiceImpl implements AuthorService {
                                   authorCreateDTO.birthedDate()));
 
         } finally {
-            if (!dbOk) {
+            if (!dbOk && s3UploadResult != null) {
                 s3ObjectUsage.delete(Collections.singletonList(s3UploadResult.s3Key()), bucket);
             }
         }
@@ -93,8 +107,11 @@ public class AuthorServiceImpl implements AuthorService {
     public void update(User user, AuthorUpdateDTO authorUpdateDTO) throws IOException {
 
         Author author = findById(authorUpdateDTO.id());
-
         S3UploadResult s3UploadResult = null;
+
+        //to check db commit is success;
+        boolean dbOk = false;
+
         if (authorUpdateDTO.image() != null && !authorUpdateDTO.image()
                                                                .isEmpty()) {
             s3UploadResult = s3ObjectUsage.create(authorUpdateDTO.image(), bucket, region);
@@ -106,8 +123,6 @@ public class AuthorServiceImpl implements AuthorService {
             author.setObjectURL(s3UploadResult.objectUrl());
         }
 
-        //to check db commit is success;
-        boolean dbOk = false;
 
         try {
             author.setName(authorUpdateDTO.name());

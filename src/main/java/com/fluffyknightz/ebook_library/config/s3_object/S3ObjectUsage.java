@@ -9,9 +9,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -26,14 +27,17 @@ public class S3ObjectUsage {
     public S3UploadResult create(MultipartFile file, String bucket, String region) throws IOException {
 
         String key = UUID.randomUUID() + "_" + file.getOriginalFilename() + "_" + LocalDateTime.now();
-        String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
+
+        String encodedKey = URLEncoder.encode(key, StandardCharsets.UTF_8);
+        String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + encodedKey;
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                                                             .bucket(bucket)
                                                             .contentType(file.getContentType())
                                                             .key(key)
-                                                            .serverSideEncryption(ServerSideEncryption.AWS_KMS)
-                                                            .bucketKeyEnabled(true)
+                                                            // cant use objecct url if encryption and bucket key are enabled
+//                                                            .serverSideEncryption(ServerSideEncryption.AWS_KMS)
+//                                                            .bucketKeyEnabled(true)
                                                             .build();
         s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
         return new S3UploadResult(key, objectUrl);
@@ -41,16 +45,16 @@ public class S3ObjectUsage {
 
     public void delete(List<String> keys, String bucket) {
 
-            List<ObjectIdentifier> objectsToDelete = keys.stream()
-                                                         .map(key -> ObjectIdentifier.builder()
-                                                                                     .key(key)
-                                                                                     .build())
-                                                         .toList();
+        List<ObjectIdentifier> objectsToDelete = keys.stream()
+                                                     .map(key -> ObjectIdentifier.builder()
+                                                                                 .key(key)
+                                                                                 .build())
+                                                     .toList();
 
-            s3Client.deleteObjects(builder -> builder.bucket(bucket)
-                                                     .bucket(bucket)
-                                                     .delete(d -> d.objects(objectsToDelete)
-                                                                   .quiet(false)));// set true to only response error, false response list for success at delete
+        s3Client.deleteObjects(builder -> builder.bucket(bucket)
+                                                 .bucket(bucket)
+                                                 .delete(d -> d.objects(objectsToDelete)
+                                                               .quiet(false)));// set true to only response error, false response list for success at delete
 
     }
 }

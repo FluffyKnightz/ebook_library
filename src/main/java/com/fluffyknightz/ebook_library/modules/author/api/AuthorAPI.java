@@ -1,5 +1,6 @@
 package com.fluffyknightz.ebook_library.modules.author.api;
 
+import com.fluffyknightz.ebook_library.config.s3_object.S3ObjectUsage;
 import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorCreateDTO;
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorUpdateDTO;
@@ -23,15 +24,16 @@ import java.io.IOException;
 public class AuthorAPI {
 
     private final AuthorService authorService;
+    private final S3ObjectUsage s3ObjectUsage;
 
     @PostMapping
     public ResponseEntity<Void> create(@AuthenticationPrincipal MyUserDetails myUserDetails,
-                                       @RequestBody @Valid AuthorCreateDTO authorCreateDTO) throws IOException {
+                                       @Valid AuthorCreateDTO authorCreateDTO) throws IOException {
         authorService.save(myUserDetails.user(), authorCreateDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    // url?page=0&size=10&&sort=propertyName[,asc(or)desc -> optional]
+    // url?search=[optional]&page=0(start from 0)&size=10&&sort=propertyName[,asc(or)desc -> optional]
     @GetMapping
     public ResponseEntity<Page<AuthorView>> getForTable(@RequestParam(required = false) String search,
                                                         Pageable pageable) {
@@ -51,7 +53,7 @@ public class AuthorAPI {
 
     @PutMapping
     public ResponseEntity<Void> update(@AuthenticationPrincipal MyUserDetails myUserDetails,
-                                       @RequestBody AuthorUpdateDTO authorUpdateDTO) throws IOException {
+                                       @Valid AuthorUpdateDTO authorUpdateDTO) throws IOException {
         authorService.update(myUserDetails.user(), authorUpdateDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -62,4 +64,5 @@ public class AuthorAPI {
         return ResponseEntity.ok()
                              .build();
     }
+
 }
