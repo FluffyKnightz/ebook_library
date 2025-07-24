@@ -11,4 +11,5 @@ public record AuthorUpdateDTO(@NotBlank String id,
                               @NotBlank(message = "{validation.nationality.required}") String nationality,
                               @NotNull(message = "{validation.birthDate.required}") LocalDate birthedDate,
                               @NotBlank(message = "{validation.description.required}") String description,
-                              MultipartFile image) {}
+                              MultipartFile image,
+                              ImageStatus imageStatus) {}

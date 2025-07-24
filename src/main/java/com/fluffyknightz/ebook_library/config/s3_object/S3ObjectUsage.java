@@ -15,6 +15,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -45,14 +46,18 @@ public class S3ObjectUsage {
 
     public void delete(List<String> keys, String bucket) {
 
+        if (keys == null || keys.stream().allMatch(Objects::isNull)) {
+            return;
+        }
+
         List<ObjectIdentifier> objectsToDelete = keys.stream()
+                                                     .filter(key -> key != null && !key.isEmpty())
                                                      .map(key -> ObjectIdentifier.builder()
                                                                                  .key(key)
                                                                                  .build())
                                                      .toList();
 
         s3Client.deleteObjects(builder -> builder.bucket(bucket)
-                                                 .bucket(bucket)
                                                  .delete(d -> d.objects(objectsToDelete)
                                                                .quiet(false)));// set true to only response error, false response list for success at delete
 

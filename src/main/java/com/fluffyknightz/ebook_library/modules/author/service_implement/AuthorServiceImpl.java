@@ -5,6 +5,7 @@ import com.fluffyknightz.ebook_library.config.s3_object.dto.S3UploadResult;
 import com.fluffyknightz.ebook_library.exception.ResourceNotFoundException;
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorCreateDTO;
 import com.fluffyknightz.ebook_library.modules.author.dto.AuthorUpdateDTO;
+import com.fluffyknightz.ebook_library.modules.author.dto.ImageStatus;
 import com.fluffyknightz.ebook_library.modules.author.entity.Author;
 import com.fluffyknightz.ebook_library.modules.author.repository.AuthorRepository;
 import com.fluffyknightz.ebook_library.modules.author.repository.AuthorViewRepository;
@@ -48,6 +49,8 @@ public class AuthorServiceImpl implements AuthorService {
 
         if (authorCreateDTO.image() != null && !authorCreateDTO.image()
                                                                .isEmpty()) {
+
+            // create new image
             s3UploadResult = s3ObjectUsage.create(authorCreateDTO.image(), bucket, region);
 
             author.setImageName(authorCreateDTO.image()
@@ -113,14 +116,30 @@ public class AuthorServiceImpl implements AuthorService {
         boolean dbOk = false;
 
         if (authorUpdateDTO.image() != null && !authorUpdateDTO.image()
-                                                               .isEmpty()) {
+                                                               .isEmpty() && authorUpdateDTO.imageStatus()
+                                                                                            .equals(ImageStatus.UPDATE)) {
+
+            // create new image
             s3UploadResult = s3ObjectUsage.create(authorUpdateDTO.image(), bucket, region);
+
+            // delete old image if new image create is success.
+            s3ObjectUsage.delete(Collections.singletonList(author.getS3Key()), bucket);
+
             author.setImageName(authorUpdateDTO.image()
                                                .getOriginalFilename());
             author.setImageType(authorUpdateDTO.image()
                                                .getContentType());
             author.setS3Key(s3UploadResult.s3Key());
             author.setObjectURL(s3UploadResult.objectUrl());
+
+        } else if (authorUpdateDTO.imageStatus().equals(ImageStatus.DELETE)) {
+            // delete old image if new image create is success.
+            s3ObjectUsage.delete(Collections.singletonList(author.getS3Key()), bucket);
+
+            author.setImageName(null);
+            author.setImageType(null);
+            author.setS3Key(null);
+            author.setObjectURL(null);
         }
 
 
