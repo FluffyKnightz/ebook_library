@@ -39,8 +39,7 @@ public class AuthorAPI {
                                                         Pageable pageable) {
         Page<AuthorView> authors = authorService.findForTable(search, pageable);
         if (authors.isEmpty()) {
-            return ResponseEntity.noContent()
-                                 .build();
+            return ResponseEntity.noContent().build();
         }
         return new ResponseEntity<>(authors, HttpStatus.FOUND);
     }
@@ -61,8 +60,7 @@ public class AuthorAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         authorService.delete(id);
-        return ResponseEntity.ok()
-                             .build();
+        return ResponseEntity.ok().build();
     }
 
 }

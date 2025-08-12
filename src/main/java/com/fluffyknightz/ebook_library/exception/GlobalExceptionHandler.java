@@ -30,11 +30,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorDetails> handleBadRequest(Exception ex, HttpServletRequest request) {
         String message;
         if (ex instanceof MethodArgumentNotValidException validationEx) {
-            message = validationEx.getBindingResult()
-                                  .getFieldErrors()
-                                  .stream()
-                                  .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                                  .collect(Collectors.joining(", "));
+            message = validationEx.getBindingResult().getFieldErrors().stream().map(
+                    DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.joining(", "));
         } else {
             message = ex.getMessage();
         }
@@ -88,7 +85,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(S3Exception.class)
     public ResponseEntity<ErrorDetails> handleS3(Exception ex, HttpServletRequest request) {
-        return buildResponse(request, HttpStatus.BAD_GATEWAY, "Failed to perform S3 operation. Errors: " + ex.getMessage());
+        return buildResponse(request, HttpStatus.BAD_GATEWAY,
+                             "Failed to perform S3 operation. Errors: " + ex.getMessage());
     }
 
     // 500 Internal Server Error: fallback for any other exception

@@ -24,12 +24,10 @@ public class UserAPI {
     }
 
     @GetMapping
-    public ResponseEntity<Page<User>> getForTable(@RequestParam(required = false) String search,
-                                                       Pageable pageable) {
+    public ResponseEntity<Page<User>> getForTable(@RequestParam(required = false) String search, Pageable pageable) {
         Page<User> users = userService.findForTable(search, pageable);
         if (users.isEmpty()) {
-            return ResponseEntity.noContent()
-                                 .build();
+            return ResponseEntity.noContent().build();
         }
         return new ResponseEntity<>(users, HttpStatus.FOUND);
     }
@@ -38,8 +36,7 @@ public class UserAPI {
     public ResponseEntity<User> getById(@PathVariable String id) {
         User user = userService.findById(id);
         if (user == null) {
-            return ResponseEntity.notFound()
-                                 .build();
+            return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(user);
     }
@@ -53,7 +50,6 @@ public class UserAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         userService.delete(id);
-        return ResponseEntity.ok()
-                             .build();
+        return ResponseEntity.ok().build();
     }
 }

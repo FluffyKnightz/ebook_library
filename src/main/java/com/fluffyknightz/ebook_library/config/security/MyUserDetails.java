@@ -18,8 +18,7 @@ public record MyUserDetails(User user) implements UserDetails {
     }
 
     public String getRole() {
-        return user.getRole()
-                   .name();
+        return user.getRole().name();
     }
 
     //To Get UserId After Login
@@ -30,8 +29,7 @@ public record MyUserDetails(User user) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(user.getRole()
-                                                      .name()));
+        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
     @Override

@@ -10,18 +10,19 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AuthorViewRepository extends MongoRepository<AuthorView, String> {
 
-    @Query("{$and: [ " + "{is_deleted :  false } , " +
-            "{$or: [ " + "{ name:  { $regex: ?0, $options: 'i' } }, " +
-            "{ description: { $regex: ?0, $options: 'i' } }, " +
-            "{ nationality: { $regex: ?0, $options: 'i' } }, " +
-            "{ created_user_username: { $regex: ?0, $options: 'i' } }, " +
-            "{ updated_user_username: { $regex: ?0, $options: 'i' } }, " +
-            // date‐as‐string match:
-            "{ $expr: { $regexMatch: { input: { $dateToString: { format: '%Y-%m-%d', date: '$birthed_date' } }, regex: ?0, options: 'i' } }, }, " +
-            "{ $expr: { $regexMatch: { input: { $dateToString: { format: '%Y-%m-%d', date: '$created_date' } }, regex: ?0, options: 'i' } }, }, " +
-            "{ $expr: { $regexMatch: { input: { $dateToString: { format: '%Y-%m-%d', date: '$updated_date' } }, regex: ?0, options: 'i' } }, } " +
-            "] }] }")
-
+    @Query("{$and: [ " +
+                "{is_deleted :  false } , " +
+                "{$or: [ " +
+                    "{ name:  { $regex: ?0, $options: 'i' } }, " +
+                    "{ description: { $regex: ?0, $options: 'i' } }, " +
+                    "{ nationality: { $regex: ?0, $options: 'i' } }, " +
+                    "{ created_user_username: { $regex: ?0, $options: 'i' } }, " +
+                    "{ updated_user_username: { $regex: ?0, $options: 'i' } }, " +
+                    // date‐as‐string match:
+                    "{ $expr: { $regexMatch: { input: { $dateToString: { format: '%Y-%m-%d', date: '$birthed_date' } }, regex: ?0, options: 'i' } }, }, "
+                    + "{ $expr: { $regexMatch: { input: { $dateToString: { format: '%Y-%m-%d', date: '$created_date' } }, regex: ?0, options: 'i' } }, }, "
+                    + "{ $expr: { $regexMatch: { input: { $dateToString: { format: '%Y-%m-%d', date: '$updated_date' } }, regex: ?0, options: 'i' } }, } "
+            + "] }] }")
     Page<AuthorView> findForTable(String searchTerm, Pageable pageable);
 
 }

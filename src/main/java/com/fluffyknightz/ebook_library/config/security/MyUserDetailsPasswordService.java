@@ -15,8 +15,8 @@ public class MyUserDetailsPasswordService implements UserDetailsPasswordService 
 
     @Override
     public MyUserDetails updatePassword(UserDetails userDetails, String newPassword) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                                  .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+        User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow(
+                () -> new UsernameNotFoundException("User Not Found"));
         user.setPassword(newPassword);    // update password in entity
         userRepository.save(user);        // persist change to DB
         return new MyUserDetails(user);

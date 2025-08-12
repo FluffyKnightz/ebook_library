@@ -41,27 +41,24 @@ public class SecurityConfig {
 
         http
 
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(authorize -> authorize
 
-                        .requestMatchers(HttpMethod.OPTIONS, "/**")
-                        .permitAll()
-                        .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/actuator/**")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().requestMatchers("/api/v1/auth/**",
+                                                                                                "/swagger-ui/**",
+                                                                                                "/actuator/**")
+                        .permitAll().anyRequest().authenticated())
 
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .exceptionHandling(exception -> exception.accessDeniedHandler(
-                                                                 (request, response, accessDeniedException) -> response.sendError(
-                                                                         HttpServletResponse.SC_FORBIDDEN, "Access Denied"))
+                .authenticationProvider(authenticationProvider()).exceptionHandling(
+                        exception -> exception.accessDeniedHandler(
+                                                      (request, response, accessDeniedException) -> response.sendError(
+                                                              HttpServletResponse.SC_FORBIDDEN, "Access Denied"))
 
-                                                         // 401 status bypass my global exception handler, so have to use own response
-                                                         .authenticationEntryPoint(customAuthenticationEntryPoint))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                                              // 401 status bypass my global exception handler, so have to use own response
+                                              .authenticationEntryPoint(customAuthenticationEntryPoint)).addFilterBefore(
+                        jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

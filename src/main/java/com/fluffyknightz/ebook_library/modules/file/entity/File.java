@@ -17,8 +17,8 @@ import java.io.Serializable;
 @Document(collection = "file")
 public class File implements Serializable {
 
-        @Id
-        private String id;
+    @Id
+    private String id;
 
     @Field(name = "file_name")
     private String fileName;

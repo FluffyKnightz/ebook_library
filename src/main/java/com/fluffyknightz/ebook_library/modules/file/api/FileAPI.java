@@ -1,6 +1,6 @@
 package com.fluffyknightz.ebook_library.modules.file.api;
 
-import com.fluffyknightz.ebook_library.modules.file.dto.FileDTO;
+import com.fluffyknightz.ebook_library.modules.file.dto.FileCreateDTO;
 import com.fluffyknightz.ebook_library.modules.file.dto.FileUpdateDto;
 import com.fluffyknightz.ebook_library.modules.file.entity.File;
 import com.fluffyknightz.ebook_library.modules.file.service.FileService;
@@ -20,8 +20,8 @@ public class FileAPI {
     private final FileService fileService;
 
     @PostMapping
-    public ResponseEntity<Void> create(FileDTO fileDTO) throws IOException {
-        fileService.save(fileDTO.files());
+    public ResponseEntity<Void> create(FileCreateDTO fileCreateDTO) throws IOException {
+        fileService.save(fileCreateDTO.files());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -29,8 +29,7 @@ public class FileAPI {
     public ResponseEntity<List<File>> getForTable() {
         List<File> files = fileService.findAll();
         if (files.isEmpty()) {
-            return ResponseEntity.noContent()
-                                 .build();
+            return ResponseEntity.noContent().build();
         }
         return new ResponseEntity<>(files, HttpStatus.FOUND);
     }
@@ -49,7 +48,11 @@ public class FileAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) throws IOException {
         fileService.delete(id);
-        return ResponseEntity.ok()
-                             .build();
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<String> download(@PathVariable String id) {
+        return new ResponseEntity<>(fileService.download(id), HttpStatus.FOUND);
     }
 }

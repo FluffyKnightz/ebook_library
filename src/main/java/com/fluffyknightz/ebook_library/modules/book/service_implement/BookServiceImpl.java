@@ -50,6 +50,8 @@ public class BookServiceImpl implements BookService {
     public void save(BookCreateDTO bookCreateDTO, User user) throws IOException {
 
         S3UploadResult s3UploadResult;
+        boolean dbOk = false;
+
         try {
             s3UploadResult = s3ObjectUsage.create(bookCreateDTO.coverImage(), bucket, region);
         } catch (IOException ex) {
@@ -62,24 +64,24 @@ public class BookServiceImpl implements BookService {
             List<File> files = fileService.save(bookCreateDTO.files());
 
             Book book = new Book(bookCreateDTO.title(), bookCreateDTO.publishedDate(), bookCreateDTO.synopsis(),
-                                 bookCreateDTO.coverImage()
-                                              .getOriginalFilename(), bookCreateDTO.coverImage()
-                                                                                   .getContentType(),
-                                 s3UploadResult.s3Key(), s3UploadResult.objectUrl(), 0, files, genres, authors,
-                                 LocalDate.now(), user, LocalDate.now(), user, false);
+                                 bookCreateDTO.coverImage().getOriginalFilename(),
+                                 bookCreateDTO.coverImage().getContentType(), s3UploadResult.s3Key(),
+                                 s3UploadResult.objectUrl(), 0, files, genres, authors, LocalDate.now(), user,
+                                 LocalDate.now(), user, false);
 
             bookRepository.insert(book);
+            dbOk = true;
 
         } catch (DataIntegrityViolationException ex) {
-            //delete if fail
-            s3ObjectUsage.delete(Collections.singletonList(s3UploadResult.s3Key()), bucket);
             throw new DuplicateKeyException(
                     "Book with title: " + bookCreateDTO.title() + "with published date: " + bookCreateDTO.publishedDate() + "  already exists");
-
         } catch (Exception ex) {
-            //delete if fail
-            s3ObjectUsage.delete(Collections.singletonList(s3UploadResult.s3Key()), bucket);
             throw new IOException("Error saving book: " + ex.getMessage());
+        } finally {
+            if (!dbOk) {
+                //delete if fail
+                s3ObjectUsage.delete(Collections.singletonList(s3UploadResult.s3Key()), bucket);
+            }
         }
     }
 
@@ -90,8 +92,8 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book findById(String id) {
-        return bookRepository.findById(id)
-                             .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
+        return bookRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Book not found with id: " + id));
     }
 
     @Override
@@ -105,60 +107,58 @@ public class BookServiceImpl implements BookService {
     public void update(BookUpdateDTO bookUpdateDTO, User user) throws IOException {
 
 
-//        Book book = findById(bookUpdateDTO.id());
-//        S3UploadResult s3UploadResult = null;
-//
-//        if (!bookUpdateDTO.coverImage()
-//                          .isEmpty()) {
-//
-//            try {
-//                // create new image 1st
-//                s3UploadResult = s3ObjectUsage.create(bookUpdateDTO.coverImage(), bucket, region);
-//            } catch (IOException ex) {
-//                throw new IOException("Error saving Cover Image: " + ex.getMessage());
-//            }
-//
-//            try {
-//                // delete previous image
-//                s3ObjectUsage.delete(Collections.singletonList(book.getS3Key()), bucket);
-//            } catch (Exception e) {
-//                log.warn("Tried to delete S3 objects but failed (likely not uploaded): {}", e.getMessage());
-//            }
-//
-//            book.setCoverImageName(bookUpdateDTO.coverImage()
-//                                                .getOriginalFilename());
-//            book.setCoverImageType(bookUpdateDTO.coverImage()
-//                                                .getContentType());
-//            book.setSynopsis(s3UploadResult.s3Key());
-//            book.setObjectURL(s3UploadResult.objectUrl());
-//        }
-//
-//        try {
-//
-//            List<Author> authors = authorRepository.findAllByNameIn(bookUpdateDTO.authors());
-//            List<Genre> genres = genreRepository.findAllByNameIn(bookUpdateDTO.genres());
-//            List<File> files = fileService.save(bookUpdateDTO.files());
-//
-//            book.setTitle(bookUpdateDTO.title());
-//            book.setPublishedDate(bookUpdateDTO.publishedDate());
-//            book.setSynopsis(bookUpdateDTO.synopsis());
-//            book.setAuthors(authors);
-//            book.setGenres(genres);
-//            book.setFiles(files);
-//            book.setUpdatedDate(LocalDate.now());
-//            book.setUpdatedUser(user);
-//            bookRepository.save(book);
-//
-//        } catch (DataIntegrityViolationException ex) {
-//            //delete if fail
-//            s3ObjectUsage.delete(Collections.singletonList(s3UploadResult), bucket);
-//            throw new DuplicateKeyException(
-//                    "Book with title: " + bookUpdateDTO.title() + "with published date: " + bookUpdateDTO.publishedDate() + "  already exists");
-//
-//        } catch (Exception ex) {
-//            //delete if fail
-//            s3ObjectUsage.delete(Collections.singletonList(key), bucket);
-//            throw new IOException("Error updating book: " + ex.getMessage());
-//        }
+        Book book = findById(bookUpdateDTO.id());
+        S3UploadResult s3UploadResult;
+        String newS3Key = null;
+        String oldS3Key = book.getS3Key();
+
+        boolean dbOk = false;
+
+        if (!bookUpdateDTO.coverImage().isEmpty()) {
+
+            // create new image 1st
+            s3UploadResult = s3ObjectUsage.create(bookUpdateDTO.coverImage(), bucket, region);
+            newS3Key = s3UploadResult.s3Key();
+
+            book.setCoverImageName(bookUpdateDTO.coverImage().getOriginalFilename());
+            book.setCoverImageType(bookUpdateDTO.coverImage().getContentType());
+            book.setSynopsis(s3UploadResult.s3Key());
+            book.setObjectURL(s3UploadResult.objectUrl());
+        }
+
+        try {
+
+            List<Author> authors = authorRepository.findAllByNameIn(bookUpdateDTO.authors());
+            List<Genre> genres = genreRepository.findAllByNameIn(bookUpdateDTO.genres());
+            List<File> files = fileService.save(bookUpdateDTO.files());
+
+            book.setTitle(bookUpdateDTO.title());
+            book.setPublishedDate(bookUpdateDTO.publishedDate());
+            book.setSynopsis(bookUpdateDTO.synopsis());
+            book.setAuthors(authors);
+            book.setGenres(genres);
+            book.setFiles(files);
+            book.setUpdatedDate(LocalDate.now());
+            book.setUpdatedUser(user);
+            bookRepository.save(book);
+            dbOk = true;
+
+            // delete previous image
+            s3ObjectUsage.delete(Collections.singletonList(oldS3Key), bucket);
+
+        } catch (DataIntegrityViolationException ex) {
+
+            throw new DuplicateKeyException(
+                    "Book with title: " + bookUpdateDTO.title() + "with published date: " + bookUpdateDTO.publishedDate() + "  already exists");
+
+        } catch (Exception ex) {
+
+            throw new IOException("Error updating book: " + ex.getMessage());
+        } finally {
+            if (!dbOk) {
+                //delete if fail
+                s3ObjectUsage.delete(Collections.singletonList(newS3Key), bucket);
+            }
+        }
     }
 }

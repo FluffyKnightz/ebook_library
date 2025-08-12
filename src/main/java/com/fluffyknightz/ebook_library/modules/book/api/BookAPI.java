@@ -32,8 +32,7 @@ public class BookAPI {
     public ResponseEntity<List<Book>> getForTable() {
         List<Book> books = bookService.findAll();
         if (books.isEmpty()) {
-            return ResponseEntity.noContent()
-                                 .build();
+            return ResponseEntity.noContent().build();
         }
         return new ResponseEntity<>(books, HttpStatus.FOUND);
     }
@@ -53,7 +52,6 @@ public class BookAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         bookService.delete(id);
-        return ResponseEntity.ok()
-                             .build();
+        return ResponseEntity.ok().build();
     }
 }

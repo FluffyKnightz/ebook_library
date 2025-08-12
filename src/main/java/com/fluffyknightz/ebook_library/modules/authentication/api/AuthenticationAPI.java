@@ -1,9 +1,9 @@
 package com.fluffyknightz.ebook_library.modules.authentication.api;
 
 import com.fluffyknightz.ebook_library.config.security.AuthenticatedData;
-import com.fluffyknightz.ebook_library.config.security.jwt.JwtService;
 import com.fluffyknightz.ebook_library.config.security.MyUserDetails;
 import com.fluffyknightz.ebook_library.config.security.MyUserDetailsService;
+import com.fluffyknightz.ebook_library.config.security.jwt.JwtService;
 import com.fluffyknightz.ebook_library.modules.authentication.dto.AuthenticationRequest;
 import com.fluffyknightz.ebook_library.modules.authentication.dto.AuthenticationResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,20 +38,16 @@ public class AuthenticationAPI {
         Authentication authentication = manager.authenticate(
                 new UsernamePasswordAuthenticationToken(authenticationRequest.username(),
                                                         authenticationRequest.password()));
-        SecurityContextHolder.getContext()
-                             .setAuthentication(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
         var jwtToken = jwtService.generateToken(myUserDetails);
-        AuthenticationResponse auth = AuthenticationResponse.builder()
-                                                            .token(jwtToken)
-                                                            .build();
+        AuthenticationResponse auth = AuthenticationResponse.builder().token(jwtToken).build();
 
-        ResponseCookie cookie = ResponseCookie.from("jwtToken", jwtToken)
-                                              .httpOnly(
+        ResponseCookie cookie = ResponseCookie.from("jwtToken", jwtToken).httpOnly(
                                                       true) // true can use it from javascript or false if only want to use from backend
                                               .secure(true) // Set to true in production with HTTPS
-                                              .path("/")
-                                              .maxAge(authenticationRequest.rememberMe() ? 2592000 : -1) // 10 hours
+                                              .path("/").maxAge(
+                        authenticationRequest.rememberMe() ? 2592000 : -1) // 10 hours
                                               .sameSite(
                                                       "Strict") // make it 'none' if you different domain, strict for same also localhost is same
                                               .build();
@@ -70,12 +66,10 @@ public class AuthenticationAPI {
         SecurityContextHolder.clearContext();
 
         // delete cookie
-        ResponseCookie deleteCookie = ResponseCookie.from("jwtToken", "")
-                                                    .httpOnly(
+        ResponseCookie deleteCookie = ResponseCookie.from("jwtToken", "").httpOnly(
                                                             true) // true can use it from javascript or false if only want to use from backend
                                                     .secure(true) // Set to true in production with HTTPS
-                                                    .path("/")
-                                                    .maxAge(0) // 0 sec
+                                                    .path("/").maxAge(0) // 0 sec
                                                     .sameSite(
                                                             "Strict") // make it 'none' if you different domain, strict for same also localhost is same
                                                     .build();
@@ -83,7 +77,6 @@ public class AuthenticationAPI {
         // Add the cookie to the response
         response.addHeader("Set-Cookie", deleteCookie.toString());
 
-        return ResponseEntity.ok()
-                             .build();
+        return ResponseEntity.ok().build();
     }
 }

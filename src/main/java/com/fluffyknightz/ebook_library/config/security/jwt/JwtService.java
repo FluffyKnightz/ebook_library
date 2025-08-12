@@ -23,8 +23,7 @@ public class JwtService {
     public JwtService() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
         SecretKey sk = keyGenerator.generateKey();
-        secretKey = Base64.getEncoder()
-                          .encodeToString(sk.getEncoded());
+        secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
     }
 
     public String extractUsername(String token) {
@@ -46,14 +45,9 @@ public class JwtService {
 
     public String generateToken(Map<String, Object> extraClaims, MyUserDetails myUserDetails) {
 
-        return Jwts.builder()
-                   .claims()
-                   .add(extraClaims)
-                   .subject(myUserDetails.getUsername())
-                   .issuedAt(new Date(System.currentTimeMillis()))
-                   .expiration(new Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)))
-                   .and()
-                   .signWith(getSignInKey())
+        return Jwts.builder().claims().add(extraClaims).subject(myUserDetails.getUsername()).issuedAt(
+                           new Date(System.currentTimeMillis())).expiration(
+                           new Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000))).and().signWith(getSignInKey())
                    .compact();
     }
 
@@ -71,24 +65,15 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                   .verifyWith(getSignInKey())
-                   .build()
-                   .parseSignedClaims(token)
-                   .getPayload();
+        return Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token).getPayload();
 
     }
 
     private String generateRefreshToken(Map<String, Object> extraClaims, MyUserDetails myUserDetails) {
 
-        return Jwts.builder()
-                   .claims()
-                   .add(extraClaims)
-                   .subject(myUserDetails.getUsername())
-                   .issuedAt(new Date(System.currentTimeMillis()))
-                   .expiration(new Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000)))
-                   .and()
-                   .signWith(getSignInKey())
+        return Jwts.builder().claims().add(extraClaims).subject(myUserDetails.getUsername()).issuedAt(
+                           new Date(System.currentTimeMillis())).expiration(
+                           new Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000))).and().signWith(getSignInKey())
                    .compact();
     }
 

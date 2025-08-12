@@ -21,7 +21,8 @@ public class GenreAPI {
     private final GenreService genreService;
 
     @PostMapping
-    public ResponseEntity<Void> create(@AuthenticationPrincipal MyUserDetails myUserDetails, @RequestBody GenreDTO genreDTO) {
+    public ResponseEntity<Void> create(@AuthenticationPrincipal MyUserDetails myUserDetails,
+                                       @RequestBody GenreDTO genreDTO) {
         genreService.save(myUserDetails.user(), genreDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -29,11 +30,10 @@ public class GenreAPI {
     // url?page=0&size=10&&sort=propertyName[,asc(or)desc -> optional]
     @GetMapping
     public ResponseEntity<Page<GenreView>> getForTable(@RequestParam(required = false) String search,
-                                                         Pageable pageable) {
+                                                       Pageable pageable) {
         Page<GenreView> genres = genreService.findForTable(search, pageable);
         if (genres.isEmpty()) {
-            return ResponseEntity.noContent()
-                                 .build();
+            return ResponseEntity.noContent().build();
         }
         return new ResponseEntity<>(genres, HttpStatus.FOUND);
     }
@@ -45,7 +45,8 @@ public class GenreAPI {
     }
 
     @PutMapping
-    public ResponseEntity<Void> update(@AuthenticationPrincipal MyUserDetails myUserDetails, @RequestBody GenreDTO genreDTO) {
+    public ResponseEntity<Void> update(@AuthenticationPrincipal MyUserDetails myUserDetails,
+                                       @RequestBody GenreDTO genreDTO) {
         genreService.update(myUserDetails.user(), genreDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -53,7 +54,6 @@ public class GenreAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         genreService.delete(id);
-        return ResponseEntity.ok()
-                             .build();
+        return ResponseEntity.ok().build();
     }
 }

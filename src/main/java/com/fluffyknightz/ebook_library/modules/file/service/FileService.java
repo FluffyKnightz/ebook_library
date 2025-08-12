@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface FileService {
 
+    void saveOverExistingBooks(String bookId, List<MultipartFile> files) throws IOException;
+
     List<File> save(List<MultipartFile> files) throws IOException;
 
     List<File> findAll();
@@ -18,4 +20,6 @@ public interface FileService {
     void delete(String id) throws IOException;
 
     void update(FileUpdateDto fileUpdateDto) throws IOException;
+
+    String download(String id);
 }

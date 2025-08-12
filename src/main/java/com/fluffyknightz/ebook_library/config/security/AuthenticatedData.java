@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
 public class AuthenticatedData {
 
     public MyUserDetails getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext()
-                                                             .getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("No authenticated user found");

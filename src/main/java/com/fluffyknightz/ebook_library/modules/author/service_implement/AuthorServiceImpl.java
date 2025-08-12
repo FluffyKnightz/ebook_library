@@ -43,26 +43,26 @@ public class AuthorServiceImpl implements AuthorService {
     public void save(User user, AuthorCreateDTO authorCreateDTO) throws IOException {
 
         Author author = new Author();
-        S3UploadResult s3UploadResult = null;
+        S3UploadResult s3UploadResult;
+        String s3Key = null;
+
         //to check db commit is success;
         boolean dbOk = false;
 
-        if (authorCreateDTO.image() != null && !authorCreateDTO.image()
-                                                               .isEmpty()) {
+        if (authorCreateDTO.image() != null && !authorCreateDTO.image().isEmpty()) {
 
             // create new image
             s3UploadResult = s3ObjectUsage.create(authorCreateDTO.image(), bucket, region);
+            s3Key = s3UploadResult.s3Key();
 
-            author.setImageName(authorCreateDTO.image()
-                                               .getOriginalFilename());
-            author.setImageType(authorCreateDTO.image()
-                                               .getContentType());
+            author.setImageName(authorCreateDTO.image().getOriginalFilename());
+            author.setImageType(authorCreateDTO.image().getContentType());
             author.setS3Key(s3UploadResult.s3Key());
             author.setObjectURL(s3UploadResult.objectUrl());
         }
 
-
         try {
+
             author.setName(authorCreateDTO.name());
             author.setDescription(authorCreateDTO.description());
             author.setNationality(authorCreateDTO.nationality());
@@ -75,14 +75,15 @@ public class AuthorServiceImpl implements AuthorService {
             dbOk = true;
 
         } catch (DataIntegrityViolationException ex) {
+
             throw new DuplicateKeyException(
                     String.format("An author with name '%s', nationality '%s', and birth date '%s' already exists",
                                   authorCreateDTO.name(), authorCreateDTO.nationality(),
                                   authorCreateDTO.birthedDate()));
 
         } finally {
-            if (!dbOk && s3UploadResult != null) {
-                s3ObjectUsage.delete(Collections.singletonList(s3UploadResult.s3Key()), bucket);
+            if (!dbOk) {
+                s3ObjectUsage.delete(Collections.singletonList(s3Key), bucket);
             }
         }
     }
@@ -95,8 +96,8 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Author findById(String id) {
-        return authorRepository.findById(id)
-                               .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
+        return authorRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Author not found with id: " + id));
     }
 
     @Override
@@ -110,38 +111,35 @@ public class AuthorServiceImpl implements AuthorService {
     public void update(User user, AuthorUpdateDTO authorUpdateDTO) throws IOException {
 
         Author author = findById(authorUpdateDTO.id());
-        S3UploadResult s3UploadResult = null;
+        S3UploadResult s3UploadResult;
+        String oldS3Key = author.getS3Key();
+        String newS3Key = null;
+
+        boolean oldImageDelete = false;
 
         //to check db commit is success;
         boolean dbOk = false;
 
-        if (authorUpdateDTO.image() != null && !authorUpdateDTO.image()
-                                                               .isEmpty() && authorUpdateDTO.imageStatus()
-                                                                                            .equals(ImageStatus.UPDATE)) {
+        if (authorUpdateDTO.image() != null && !authorUpdateDTO.image().isEmpty() && authorUpdateDTO.imageStatus()
+                                                                                                    .equals(ImageStatus.UPDATE)) {
 
+            oldImageDelete = true;
             // create new image
             s3UploadResult = s3ObjectUsage.create(authorUpdateDTO.image(), bucket, region);
+            newS3Key = s3UploadResult.s3Key();
 
-            // delete old image if new image create is success.
-            s3ObjectUsage.delete(Collections.singletonList(author.getS3Key()), bucket);
-
-            author.setImageName(authorUpdateDTO.image()
-                                               .getOriginalFilename());
-            author.setImageType(authorUpdateDTO.image()
-                                               .getContentType());
+            author.setImageName(authorUpdateDTO.image().getOriginalFilename());
+            author.setImageType(authorUpdateDTO.image().getContentType());
             author.setS3Key(s3UploadResult.s3Key());
             author.setObjectURL(s3UploadResult.objectUrl());
 
         } else if (authorUpdateDTO.imageStatus().equals(ImageStatus.DELETE)) {
-            // delete old image if new image create is success.
-            s3ObjectUsage.delete(Collections.singletonList(author.getS3Key()), bucket);
-
+            oldImageDelete = true;
             author.setImageName(null);
             author.setImageType(null);
             author.setS3Key(null);
             author.setObjectURL(null);
         }
-
 
         try {
             author.setName(authorUpdateDTO.name());
@@ -153,6 +151,11 @@ public class AuthorServiceImpl implements AuthorService {
             authorRepository.save(author);
             dbOk = true;
 
+            // delete old image after all success
+            if (oldImageDelete) {
+                s3ObjectUsage.delete(Collections.singletonList(oldS3Key), bucket);
+            }
+
         } catch (DataIntegrityViolationException ex) {
             throw new DuplicateKeyException(
                     String.format("An author with name '%s', nationality '%s', and birth date '%s' already exists",
@@ -160,8 +163,8 @@ public class AuthorServiceImpl implements AuthorService {
                                   authorUpdateDTO.birthedDate()));
 
         } finally {
-            if (!dbOk && s3UploadResult != null) {
-                s3ObjectUsage.delete(Collections.singletonList(s3UploadResult.s3Key()), bucket);
+            if (!dbOk) {
+                s3ObjectUsage.delete(Collections.singletonList(newS3Key), bucket);
             }
         }
     }

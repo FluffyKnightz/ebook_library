@@ -1,6 +1,7 @@
 package com.fluffyknightz.ebook_library.config.s3_object;
 
 import com.fluffyknightz.ebook_library.config.s3_object.dto.S3UploadResult;
+import io.awspring.cloud.s3.S3Exception;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,15 +33,17 @@ public class S3ObjectUsage {
         String encodedKey = URLEncoder.encode(key, StandardCharsets.UTF_8);
         String objectUrl = "https://" + bucket + ".s3." + region + ".amazonaws.com/" + encodedKey;
 
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                                                            .bucket(bucket)
-                                                            .contentType(file.getContentType())
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(bucket).contentType(file.getContentType())
                                                             .key(key)
-                                                            // cant use objecct url if encryption and bucket key are enabled
+                                                            // cant use object url if encryption and bucket key are enabled
 //                                                            .serverSideEncryption(ServerSideEncryption.AWS_KMS)
 //                                                            .bucketKeyEnabled(true)
                                                             .build();
-        s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        try {
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        } catch (Exception ex) {
+            throw new S3Exception("Failed to Upload Files", ex);
+        }
         return new S3UploadResult(key, objectUrl);
     }
 
@@ -50,16 +53,14 @@ public class S3ObjectUsage {
             return;
         }
 
-        List<ObjectIdentifier> objectsToDelete = keys.stream()
-                                                     .filter(key -> key != null && !key.isEmpty())
-                                                     .map(key -> ObjectIdentifier.builder()
-                                                                                 .key(key)
-                                                                                 .build())
-                                                     .toList();
+        List<ObjectIdentifier> objectsToDelete = keys.stream().filter(key -> key != null && !key.isEmpty()).map(
+                key -> ObjectIdentifier.builder().key(key).build()).toList();
 
-        s3Client.deleteObjects(builder -> builder.bucket(bucket)
-                                                 .delete(d -> d.objects(objectsToDelete)
-                                                               .quiet(false)));// set true to only response error, false response list for success at delete
-
+        try {
+            s3Client.deleteObjects(builder -> builder.bucket(bucket).delete(d -> d.objects(objectsToDelete)
+                                                                                  .quiet(false)));// set true to only response error, false response list for success at delete
+        } catch (Exception ex) {
+            throw new S3Exception("Failed to Delete Files", ex);
+        }
     }
 }

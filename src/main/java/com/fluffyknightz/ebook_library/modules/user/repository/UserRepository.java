@@ -10,11 +10,7 @@ import java.util.Optional;
 
 public interface UserRepository extends MongoRepository<User, String> {
 
-    @Query("{$and: [ " + "{is_deleted :  false } , " +
-            "{$or: [ " + "{ username:  { $regex: ?0, $options: 'i' } }, " +
-            "{ email: { $regex: ?0, $options: 'i' } }, " +
-            "{ role: { $regex: ?0, $options: 'i' } }, " +
-            "] }] }")
+    @Query("{$and: [ " + "{is_deleted :  false } , " + "{$or: [ " + "{ username:  { $regex: ?0, $options: 'i' } }, " + "{ email: { $regex: ?0, $options: 'i' } }, " + "{ role: { $regex: ?0, $options: 'i' } }, " + "] }] }")
     Page<User> findForTable(String searchTerm, Pageable pageable);
 
     Optional<User> findByUsername(String username);
